@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kasir Super Pro (Clean Sync)</title>
+    <title>Kasir Super Pro (Safety Sync)</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
@@ -23,7 +23,6 @@
         table { width: 100%; border-collapse: collapse; margin-bottom: 5px; font-size: 13px; }
         th, td { border: 1px solid #f1f3f5; padding: 10px; text-align: left; }
         th { background-color: #f8f9fa; color: #888; font-size: 10px; text-transform: uppercase; }
-        .kode-kolom { text-align: center; font-weight: bold; color: #007bff; width: 35px; background: #fdfdfd; }
         
         .input-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
         .input-group input, .input-group select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; flex-grow: 1; outline: none; }
@@ -34,9 +33,9 @@
         .btn-input { background: #007bff; margin-top: 5px; }
         .btn-hijau { background: #28a745; margin-top: 5px; }
         
-        /* STRUK BIASA (Putih Bersih) */
-        .card-struk { border-top: 5px solid #28a745; }
-        .struk-item { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; border-bottom: 1px dashed #eee; padding-bottom: 5px; }
+        /* STRUK AREA */
+        .struk-item { display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 8px; border-bottom: 1px dashed #eee; padding-bottom: 5px; }
+        .btn-batal-item { background: none; color: #dc3545; width: auto; padding: 0 5px; font-size: 16px; font-weight: bold; }
         .total-box { margin-top: 15px; border-top: 2px solid #444; padding-top: 10px; }
         .baris-total { display: flex; justify-content: space-between; font-weight: bold; font-size: 18px; margin-bottom: 10px; }
         
@@ -48,7 +47,7 @@
 <div class="card">
     <h3>Pemasukan Hari Ini</h3>
     <div class="laporan-teks">Rp <span id="teksPendapatan">0</span></div>
-    <button style="background: #eee; color: #666; font-size: 11px;" onclick="resetPendapatanHariIni()">Tutup Toko (Reset Laporan)</button>
+    <button style="background: #eee; color: #666; font-size: 11px;" onclick="resetPendapatanHariIni()">Tutup Toko</button>
 </div>
 
 <div class="card">
@@ -62,7 +61,7 @@
             <option value="Makanan">Makanan</option>
             <option value="Minuman">Minuman</option>
             <option value="Rokok">Rokok</option>
-            <option value="Jasa">Jasa/Lainnya</option>
+            <option value="Jasa">Jasa</option>
         </select>
         <input type="text" id="hargaBaru" placeholder="Harga" oninput="formatInputUang(this)">
     </div>
@@ -72,15 +71,15 @@
 <div class="card" style="border-top: 5px solid #007bff;">
     <h3>Cari Barang</h3>
     <div class="input-group">
-        <input type="text" id="inputCari" placeholder="Ketik Kode atau Nama...">
+        <input type="text" id="inputCari" placeholder="Ketik Kode/Nama...">
         <input type="number" id="inputQty" value="1" style="width: 50px; flex-grow: 0;">
     </div>
     <button class="btn-input" onclick="tambahPesanan()">MASUKKAN KE STRUK</button>
 </div>
 
-<div class="card card-struk">
+<div class="card" style="border-top: 5px solid #28a745;">
     <h3>Struk Belanja</h3>
-    <div id="daftarStruk" style="min-height: 50px;"></div>
+    <div id="daftarStruk"></div>
     
     <div class="total-box">
         <div class="baris-total"><span>TOTAL:</span><span>Rp <span id="teksTotal">0</span></span></div>
@@ -134,16 +133,14 @@
                 items.forEach(item => {
                     const idx = databaseMenu.indexOf(item);
                     html += `<tr>
-                        <td class="kode-kolom">${item.kode}</td>
+                        <td style="font-weight:bold; color:#007bff">${item.kode}</td>
                         <td>
                             <strong>${item.nama}</strong><br>
-                            <span style="font-size:10px; color:#007bff" onclick="editMenu(${idx})">Edit</span> | 
-                            <span style="font-size:10px; color:red" onclick="hapusMenu(${idx})">Hapus</span>
+                            <span style="font-size:10px; color:#999" onclick="editMenu(${idx})">Edit</span> | 
+                            <span style="font-size:10px; color:#999" onclick="hapusMenu(${idx})">Hapus</span>
                         </td>
                         <td>${item.harga.toLocaleString('id-ID')}</td>
-                        <td style="text-align:center">
-                            <button class="btn-pilih" onclick="pilihDariMenu(${idx})">🛒</button>
-                        </td>
+                        <td style="text-align:center"><button class="btn-pilih" onclick="pilihDariMenu(${idx})">🛒</button></td>
                     </tr>`;
                 });
                 html += `</tbody></table>`;
@@ -156,6 +153,28 @@
         const item = databaseMenu[index];
         keranjang.push({ nama: item.nama, qty: 1, subtotal: item.harga });
         renderStruk();
+    }
+
+    // FITUR BARU: Hapus satu barang dari struk
+    function hapusDariKeranjang(index) {
+        keranjang.splice(index, 1);
+        renderStruk();
+    }
+
+    function renderStruk() {
+        const ds = document.getElementById('daftarStruk');
+        ds.innerHTML = ''; totalSemua = 0;
+        if (keranjang.length === 0) ds.innerHTML = '<p style="text-align:center; color:#ccc; font-size:12px;">(Kosong)</p>';
+        keranjang.forEach((p, index) => {
+            ds.innerHTML += `
+                <div class="struk-item">
+                    <span><button class="btn-batal-item" onclick="hapusDariKeranjang(${index})">×</button> ${p.nama} (x${p.qty})</span>
+                    <span>${p.subtotal.toLocaleString('id-ID')}</span>
+                </div>`;
+            totalSemua += p.subtotal;
+        });
+        document.getElementById('teksTotal').innerText = totalSemua.toLocaleString('id-ID');
+        hitungKembalian();
     }
 
     function formatInputUangBeli(el) {
@@ -173,7 +192,7 @@
         const nama = document.getElementById('namaBaru').value;
         const kat = document.getElementById('katBaru').value;
         const harga = parseInt(document.getElementById('hargaBaru').value.replace(/[^0-9]/g, ''));
-        if (!nama || isNaN(harga)) return alert("Data tidak lengkap!");
+        if (!nama || isNaN(harga)) return alert("Isi data!");
         let kode = databaseMenu.length > 0 ? Math.max(...databaseMenu.map(m => m.kode)) + 1 : 1;
         databaseMenu.push({ kode, nama, harga, kategori: kat });
         db.ref('bengkel/menu').set(databaseMenu);
@@ -182,9 +201,9 @@
     }
 
     function editMenu(index) {
-        let n = prompt("Edit Nama:", databaseMenu[index].nama);
+        let n = prompt("Nama baru:", databaseMenu[index].nama);
         if (n) {
-            let h = prompt("Edit Harga:", databaseMenu[index].harga);
+            let h = prompt("Harga baru:", databaseMenu[index].harga);
             databaseMenu[index].nama = n;
             databaseMenu[index].harga = parseInt(h.replace(/[^0-9]/g, ''));
             db.ref('bengkel/menu').set(databaseMenu);
@@ -192,7 +211,7 @@
     }
 
     function hapusMenu(index) {
-        if(confirm("Hapus?")) {
+        if(confirm("Hapus menu?")) {
             databaseMenu.splice(index, 1);
             db.ref('bengkel/menu').set(databaseMenu);
         }
@@ -209,42 +228,27 @@
         }
     }
 
-    function renderStruk() {
-        const ds = document.getElementById('daftarStruk');
-        ds.innerHTML = ''; totalSemua = 0;
-        if (keranjang.length === 0) ds.innerHTML = '<p style="text-align:center; color:#ccc; font-size:12px;">(Belum ada pesanan)</p>';
-        keranjang.forEach(p => {
-            ds.innerHTML += `<div class="struk-item"><span>${p.nama} (x${p.qty})</span><span>${p.subtotal.toLocaleString('id-ID')}</span></div>`;
-            totalSemua += p.subtotal;
-        });
-        document.getElementById('teksTotal').innerText = totalSemua.toLocaleString('id-ID');
-        hitungKembalian();
-    }
-
     function hitungKembalian() {
         const u = parseInt(document.getElementById('inputUang').value.replace(/[^0-9]/g, '')) || 0;
         const k = u - totalSemua;
         const teks = document.getElementById('teksKembalian');
-        if (u === 0 || totalSemua === 0) { teks.innerText = "Rp 0"; teks.style.color = "#28a745"; }
-        else if (k < 0) { teks.innerText = "Kurang!"; teks.style.color = "red"; }
-        else { teks.innerText = "Rp " + k.toLocaleString('id-ID'); teks.style.color = "#28a745"; }
+        if (u === 0 || totalSemua === 0) teks.innerText = "Rp 0";
+        else teks.innerText = k < 0 ? "Kurang!" : "Rp " + k.toLocaleString('id-ID');
     }
 
     function selesaikanTransaksi() {
         if (keranjang.length === 0) return;
         const u = parseInt(document.getElementById('inputUang').value.replace(/[^0-9]/g, '')) || 0;
         if (u < totalSemua) return alert("Uang kurang!");
-
         db.ref('bengkel/pendapatan').transaction(t => (t || 0) + totalSemua);
         keranjang = []; document.getElementById('inputUang').value = '';
         renderStruk();
-        alert("Transaksi Berhasil!");
+        alert("Selesai!");
     }
 
     function resetPendapatanHariIni() {
-        if(confirm("Reset pendapatan?")) db.ref('bengkel/pendapatan').set(0);
+        if(confirm("Reset?")) db.ref('bengkel/pendapatan').set(0);
     }
 </script>
 </body>
-    </html>
-    
+</html>
