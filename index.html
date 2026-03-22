@@ -25,7 +25,8 @@
         button { border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; padding: 10px; width: 100%; }
         .btn-input { background: #007bff; width: 35%; }
         .btn-hijau { background: #28a745; margin-top: 5px; }
-        .btn-merah { background: #dc3545; padding: 5px 10px; font-size: 12px; width: auto; }
+        .btn-biru { background: #007bff; }
+        .btn-merah { background: #dc3545; }
         .btn-selesai { background: #17a2b8; margin-top: 15px; font-size: 16px; padding: 12px; }
         .btn-reset-hari { background: #6c757d; margin-top: 10px; font-size: 14px; }
 
@@ -57,7 +58,7 @@
 
     <table style="margin-top: 15px;">
         <thead>
-            <tr><th>No</th><th>Nama</th><th>Harga</th><th>Aksi</th></tr>
+            <tr><th>No</th><th>Nama</th><th>Harga</th><th style="text-align: center;">Aksi</th></tr>
         </thead>
         <tbody id="tabelMenu"></tbody>
     </table>
@@ -90,7 +91,6 @@
 </div>
 
 <script>
-    // 2. KUNCI RAHASIA FIREBASE KAMU
     const firebaseConfig = {
       apiKey: "AIzaSyAD9yuW_Cjibee-xv2a81LQPFd04sYULVA8",
       authDomain: "kasir-nosa.firebaseapp.com",
@@ -101,7 +101,6 @@
       appId: "1:512291099629:web:4f4e8687bf4f236fa44da4"
     };
 
-    // Nyalakan Mesin Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
@@ -109,30 +108,24 @@
     let keranjang = [];
     let totalSemua = 0;
     let pendapatanHariIni = 0;
-
-    // 3. SINKRONISASI DATA DARI CLOUD (Menggantikan LocalStorage)
     
-    // Tarik data Pendapatan secara Real-time
     db.ref('bengkel/pendapatan').on('value', (snapshot) => {
         pendapatanHariIni = snapshot.val() || 0;
         document.getElementById('teksPendapatan').innerText = pendapatanHariIni.toLocaleString('id-ID');
     });
 
-    // Tarik data Menu secara Real-time
     db.ref('bengkel/menu').on('value', (snapshot) => {
-        databaseMenu = snapshot.val() || [
-            { kode: 1, nama: "Tambal Ban", harga: 15000 },
-            { kode: 2, nama: "Ganti Oli", harga: 45000 }
-        ];
+        databaseMenu = snapshot.val() || [];
         renderMenu();
     });
 
-    // Fungsi menyimpan menu ke Internet
     function simpanMenuKeCloud() {
-        db.ref('bengkel/menu').set(databaseMenu);
+        if (databaseMenu.length === 0) {
+            db.ref('bengkel/menu').remove(); 
+        } else {
+            db.ref('bengkel/menu').set(databaseMenu);
+        }
     }
-
-    // --- SISA KODE DI BAWAH INI SAMA PERSIS DENGAN BUATANMU ---
 
     function formatInputUangBeli(elemen) {
         let angkaMurni = elemen.value.replace(/[^0-9]/g, ''); 
@@ -147,6 +140,7 @@
         else elemen.value = "";
     }
 
+    // Tampilan Tabel Menu yang Baru (Ada tombol Edit)
     function renderMenu() {
         const tabel = document.getElementById('tabelMenu');
         tabel.innerHTML = '';
@@ -155,8 +149,11 @@
                 <tr>
                     <td class="kode-kolom">${item.kode}</td>
                     <td>${item.nama}</td>
-                    <td>Rp ${item.harga.toLocaleString('id-ID')}</td>
-                    <td style="text-align: center;"><button class="btn-merah" onclick="hapusMenu(${index})">X</button></td>
+                    <td style="white-space: nowrap;">Rp ${item.harga.toLocaleString('id-ID')}</td>
+                    <td style="text-align: center; white-space: nowrap;">
+                        <button class="btn-biru" style="padding: 5px 8px; font-size: 12px; width: auto; display: inline-block; margin-right: 2px;" onclick="editMenu(${index})">Edit</button>
+                        <button class="btn-merah" style="padding: 5px 8px; font-size: 12px; width: auto; display: inline-block;" onclick="hapusMenu(${index})">X</button>
+                    </td>
                 </tr>
             `;
         });
@@ -178,17 +175,44 @@
         }
         
         databaseMenu.push({ kode: kodeBaru, nama: nama, harga: harga });
-        simpanMenuKeCloud(); // Kirim ke Cloud
+        simpanMenuKeCloud(); 
 
         document.getElementById('namaBaru').value = '';
         document.getElementById('hargaBaru').value = '';
+    }
+
+    // FUNGSI EDIT MENU BARU
+    function editMenu(index) {
+        let itemLama = databaseMenu[index];
+        
+        // Minta Nama Baru
+        let namaBaru = prompt("Edit Nama Menu:", itemLama.nama);
+        if (namaBaru === null) return; // Kalau ditekan Batal/Cancel
+        
+        // Minta Harga Baru
+        let hargaBaruTeks = prompt("Edit Harga (Ketikan angka saja, tanpa titik):", itemLama.harga);
+        if (hargaBaruTeks === null) return; // Kalau ditekan Batal/Cancel
+        
+        // Bersihkan kalau ada spasi/titik yang tidak sengaja terketik
+        let hargaBaru = parseInt(hargaBaruTeks.replace(/[^0-9]/g, ''));
+        
+        // Cek apakah data valid
+        if (namaBaru.trim() === "" || isNaN(hargaBaru)) {
+            alert("Perubahan dibatalkan: Data tidak valid!");
+            return;
+        }
+        
+        // Simpan Data Baru dan Kirim ke Cloud
+        databaseMenu[index].nama = namaBaru;
+        databaseMenu[index].harga = hargaBaru;
+        simpanMenuKeCloud();
     }
 
     function hapusMenu(index) {
         if(confirm("Hapus menu ini?")) {
             databaseMenu.splice(index, 1);
             databaseMenu.forEach((item, i) => { item.kode = i + 1; });
-            simpanMenuKeCloud(); // Kirim ke Cloud
+            simpanMenuKeCloud(); 
         }
     }
 
@@ -247,7 +271,6 @@
 
         if (uangMasuk < totalSemua) return alert("Uang pelanggan masih kurang!");
 
-        // Tambah pendapatan ke Cloud
         db.ref('bengkel/pendapatan').transaction((totalSekarang) => {
             return (totalSekarang || 0) + totalSemua;
         });
@@ -260,7 +283,6 @@
 
     function resetPendapatanHariIni() {
         if(confirm("Yakin ingin mereset total pemasukan? Lakukan ini hanya saat tutup bengkel!")) {
-            // Kembalikan pendapatan di Cloud menjadi 0
             db.ref('bengkel/pendapatan').set(0);
         }
     }
