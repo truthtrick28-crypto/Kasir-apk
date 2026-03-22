@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kasir Super Pro v11 (Big Receipt)</title>
+    <title>Kasir Super Pro v13 (Accordion History)</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 10px; max-width: 500px; margin: auto; background-color: #f0f2f5; color: #333; }
+        body { font-family: 'Segoe UI', sans-serif; padding: 10px; max-width: 500px; margin: auto; background-color: #f0f2f5; color: #333; }
         .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; border: 1px solid #e1e4e8; }
         h3 { text-align: center; color: #1a73e8; margin-top: 0; padding-bottom: 10px; border-bottom: 2px solid #f1f3f5; text-transform: uppercase; font-size: 16px; letter-spacing: 1px; }
         
@@ -23,49 +23,46 @@
         .qty-control { display: flex; align-items: center; justify-content: space-between; border: 1.5px solid #ddd; border-radius: 30px; padding: 2px; background: #fff; width: 95px; margin: auto; }
         .btn-minus { background: #ff4d4d; color: white; border-radius: 50%; width: 30px; height: 30px; font-size: 20px; border:none; cursor:pointer; }
         .btn-plus { background: #28a745; color: white; border-radius: 50%; width: 30px; height: 30px; font-size: 20px; border:none; cursor:pointer; }
-        .qty-num { font-size: 16px; font-weight: bold; }
-
-        /* INPUT AREA */
-        input, select { width: 100%; padding: 14px; border: 1.5px solid #ddd; border-radius: 10px; font-size: 15px; margin-bottom: 10px; box-sizing: border-box; outline: none; transition: 0.3s; }
-        input:focus { border-color: #1a73e8; box-shadow: 0 0 0 3px rgba(26,115,232,0.1); }
+        
+        input, select { width: 100%; padding: 14px; border: 1.5px solid #ddd; border-radius: 10px; font-size: 15px; margin-bottom: 10px; box-sizing: border-box; outline: none; }
         .search-menu-box { background: #fffde7; border-color: #fbc02d; font-weight: bold; }
 
-        /* --- DESAIN STRUK BESAR --- */
-        .card-struk { border-top: 8px solid #28a745; background: #ffffff; }
-        .struk-header { text-align: center; font-family: monospace; font-weight: bold; margin-bottom: 15px; border-bottom: 1px dashed #ccc; padding-bottom: 10px; color: #666; }
-        .struk-item { display: flex; justify-content: space-between; padding: 8px 0; font-family: monospace; font-size: 15px; border-bottom: 1px dotted #eee; }
-        
+        /* STRUK BELANJA */
         .total-display { text-align: center; padding: 20px 0; background: #f8fff9; border-radius: 10px; margin: 15px 0; border: 1px solid #d4edda; }
-        .total-label { font-size: 14px; color: #666; text-transform: uppercase; font-weight: bold; }
-        .total-harga { font-size: 42px; font-weight: 900; color: #155724; display: block; margin-top: 5px; }
-
-        .bayar-section { margin-top: 15px; }
+        .total-harga { font-size: 42px; font-weight: 900; color: #155724; display: block; }
         .input-bayar { font-size: 24px !important; font-weight: bold; text-align: center; color: #1a73e8; border: 2px solid #1a73e8 !important; }
-        
-        .kembali-box { text-align: center; padding: 15px; background: #e7f3ff; border-radius: 10px; margin-top: 10px; border: 1.5px solid #b8daff; }
-        .kembali-label { font-size: 13px; color: #004085; font-weight: bold; }
         .kembali-angka { font-size: 28px; font-weight: bold; color: #004085; display: block; }
 
-        /* Tombol */
-        button { border: none; border-radius: 12px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        button:active { transform: scale(0.95); }
-        .btn-simpan { background: #28a745; color: white; width: 100%; padding: 18px; font-size: 20px; margin-top: 15px; box-shadow: 0 4px 10px rgba(40,167,69,0.3); }
-        .btn-biru { background: #1a73e8; color: white; padding: 15px; width: 100%; font-size: 16px; margin-top: 5px; }
-        .btn-reset-group { display: flex; gap: 5px; margin-top: 15px; }
-        .btn-reset-small { flex: 1; padding: 8px; font-size: 10px; background: #eee; color: #666; }
+        /* --- STYLE HISTORY LIPAT (ACCORDION) --- */
+        .history-item { border: 1px solid #e1e4e8; border-radius: 10px; margin-bottom: 10px; overflow: hidden; background: white; border-left: 6px solid #28a745; }
         
-        .history-card { border-top: 5px solid #6c757d; }
-        .history-row { padding: 12px; border-left: 5px solid #28a745; background: #f9f9f9; margin-bottom: 10px; border-radius: 8px; font-size: 13px; }
+        /* Bagian Kepala (Yang ditekan) */
+        .history-header { display: flex; justify-content: space-between; align-items: center; padding: 15px; cursor: pointer; background: #fdfdfd; transition: 0.2s; }
+        .history-header:active { background: #f0f0f0; }
+        .header-time { font-family: monospace; font-weight: bold; color: #666; font-size: 14px; }
+        .header-total { font-weight: bold; color: #28a745; font-size: 16px; }
+        .header-arrow { color: #ccc; font-size: 12px; }
+
+        /* Bagian Rincian (Yang disembunyikan) */
+        .history-details { display: none; padding: 15px; border-top: 1px dashed #eee; background: #fafafa; }
+        .history-goods { font-size: 13px; color: #555; line-height: 1.5; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+        
+        .history-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .grid-box { background: white; padding: 8px; border-radius: 5px; border: 1px solid #eee; }
+        .grid-label { font-size: 9px; color: #999; font-weight: bold; display: block; }
+        .grid-value { font-weight: bold; font-size: 12px; }
+
+        /* Tombol */
+        .btn-simpan { background: #28a745; color: white; width: 100%; padding: 18px; font-size: 20px; margin-top: 15px; border-radius: 12px; font-weight: bold; box-shadow: 0 4px 10px rgba(40,167,69,0.3); }
+        .btn-reset-small { flex: 1; padding: 8px; font-size: 10px; background: #eee; color: #666; border-radius: 8px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <h3>Pemasukan Hari Ini</h3>
-    <div style="text-align: center; font-size: 32px; font-weight: 900; color: #1a73e8; margin: 10px 0;">
-        Rp <span id="teksPendapatan">0</span>
-    </div>
-    <div class="btn-reset-group">
+    <div style="text-align: center; font-size: 32px; font-weight: 900; color: #1a73e8; margin: 10px 0;">Rp <span id="teksPendapatan">0</span></div>
+    <div style="display: flex; gap: 5px;">
         <button class="btn-reset-small" onclick="resetHistorySaja()">Hapus History</button>
         <button class="btn-reset-small" onclick="resetUangSaja()">Reset Uang</button>
         <button class="btn-reset-small" style="background:#ff4d4d; color:white;" onclick="resetSemua()">Reset Semua</button>
@@ -78,7 +75,6 @@
     <div id="containerMenu"></div>
 
     <div style="margin-top:25px; border-top: 2px dashed #eee; padding-top:15px;">
-        <p style="font-weight:bold; font-size:13px; color:#555; margin-bottom:10px;">+ Tambah Barang Baru</p>
         <input type="text" id="namaBaru" placeholder="Nama Barang">
         <select id="katBaru">
             <option value="Makanan">Makanan</option>
@@ -87,45 +83,33 @@
             <option value="Jasa">Jasa</option>
         </select>
         <input type="text" id="hargaBaru" placeholder="Harga" oninput="formatInputUang(this)">
-        <button class="btn-biru" style="background:#28a745" onclick="tambahMenuBaru()">Simpan Menu</button>
+        <button style="background:#28a745; color:white; width:100%; padding:12px; border-radius:10px; font-weight:bold;" onclick="tambahMenuBaru()">Simpan Menu</button>
     </div>
 </div>
 
-<div class="card" style="border-top: 5px solid #1a73e8;">
-    <h3>Input Kode/Nama</h3>
-    <input type="text" id="inputCari" placeholder="Contoh: 1 atau Ayam">
-    <button class="btn-biru" onclick="tambahPesanan()">MASUKKAN KE STRUK</button>
-</div>
-
-<div class="card card-struk">
-    <div class="struk-header">STRUK PENJUALAN</div>
-    <div id="daftarStruk"></div>
-    
+<div class="card" style="border-top: 8px solid #28a745;">
+    <h3 style="color:#28a745">Struk Belanja</h3>
+    <div id="daftarStruk" style="font-family:monospace; margin-bottom:10px;"></div>
     <div class="total-display">
-        <span class="total-label">Total Belanja</span>
+        <span style="font-size:12px; color:#666; font-weight:bold;">TOTAL BELANJA</span>
         <span class="total-harga">Rp <span id="teksTotal">0</span></span>
     </div>
-
-    <div class="bayar-section">
-        <span style="font-weight:bold; color:#666; font-size:13px;">UANG DITERIMA:</span>
-        <input type="text" id="inputUang" class="input-bayar" placeholder="0" oninput="formatInputUangBeli(this)">
-    </div>
-
-    <div class="kembali-box">
-        <span class="kembali-label">UANG KEMBALIAN:</span>
+    <input type="text" id="inputUang" class="input-bayar" placeholder="UANG BAYAR" oninput="formatInputUangBeli(this)">
+    <div style="text-align:center; padding:15px; background:#e7f3ff; border-radius:10px; margin-top:10px; border:1px solid #b8daff;">
+        <span style="font-size:12px; color:#004085; font-weight:bold;">KEMBALIAN:</span>
         <span class="kembali-angka" id="teksKembalian">Rp 0</span>
     </div>
-
     <button class="btn-simpan" onclick="selesaikanTransaksi()">SIMPAN TRANSAKSI</button>
 </div>
 
-<div class="card history-card">
+<div class="card">
     <h3>Riwayat Penjualan</h3>
-    <div id="containerHistory" style="max-height: 300px; overflow-y: auto;"></div>
+    <p style="font-size: 10px; text-align: center; color: #999; margin-bottom: 10px;">(Tekan jam/total untuk lihat rincian)</p>
+    <div id="containerHistory" style="max-height: 400px; overflow-y: auto;"></div>
 </div>
 
 <script>
-    // --- FIREBASE CONFIG (DARI SCREENSHOT KAMU) ---
+    // --- FIREBASE CONFIG ---
     const firebaseConfig = {
       apiKey: "AIzaSyAD9yuW_Cjibee-xv2a81LQPFd04sYULVA8",
       authDomain: "kasir-nosa.firebaseapp.com",
@@ -133,8 +117,7 @@
       projectId: "kasir-nosa",
       storageBucket: "kasir-nosa.firebasestorage.app",
       messagingSenderId: "512291099629",
-      appId: "1:512291099629:web:4f4e8687bf4f236fa44da4",
-      measurementId: "G-4QV2GP19PS"
+      appId: "1:512291099629:web:4f4e8687bf4f236fa44da4"
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -143,35 +126,56 @@
     let keranjang = [];
     let totalSemua = 0;
     
-    // Tarik Pendapatan
-    db.ref('bengkel/pendapatan').on('value', (s) => { 
-        document.getElementById('teksPendapatan').innerText = (s.val() || 0).toLocaleString('id-ID'); 
-    });
+    db.ref('bengkel/pendapatan').on('value', (s) => { document.getElementById('teksPendapatan').innerText = (s.val() || 0).toLocaleString('id-ID'); });
+    db.ref('bengkel/menu').on('value', (s) => { databaseMenu = s.val() || []; renderGroupedMenu(); });
 
-    // Tarik Menu
-    db.ref('bengkel/menu').on('value', (s) => { 
-        databaseMenu = s.val() || []; 
-        renderGroupedMenu(); 
-    });
-
-    // Tarik History
+    // RENDERING HISTORY DENGAN FUNGSI KLIK
     db.ref('bengkel/history').on('value', (s) => {
         const data = s.val();
         const container = document.getElementById('containerHistory');
         container.innerHTML = '';
-        if(!data) { container.innerHTML = '<p style="text-align:center; color:#ccc;">Belum ada data.</p>'; return; }
+        if(!data) return container.innerHTML = '<p style="text-align:center; color:#ccc;">Kosong.</p>';
+        
         Object.keys(data).reverse().forEach(key => {
             const h = data[key];
-            container.innerHTML += `<div class="history-row"><div style="color:#888; font-size:10px;">${h.waktu}</div><span style="float:right; font-weight:bold; color:#28a745;">Rp ${h.total.toLocaleString('id-ID')}</span><div>${h.barang}</div></div>`;
+            const safeKey = key.replace(/[^a-zA-Z0-9]/g, ''); // Buat ID yang aman
+            
+            container.innerHTML += `
+                <div class="history-item">
+                    <div class="history-header" onclick="toggleDetails('${safeKey}')">
+                        <span class="header-time">${h.waktu}</span>
+                        <span class="header-total">Rp ${h.total.toLocaleString('id-ID')}</span>
+                        <span class="header-arrow" id="arrow-${safeKey}">▼</span>
+                    </div>
+                    <div class="history-details" id="details-${safeKey}">
+                        <div class="history-goods">${h.barang}</div>
+                        <div class="history-grid">
+                            <div class="grid-box"><span class="grid-label">BAYAR</span><span class="grid-value" style="color:#1a73e8">Rp ${h.bayar.toLocaleString('id-ID')}</span></div>
+                            <div class="grid-box"><span class="grid-label">KEMBALI</span><span class="grid-value" style="color:#004085">Rp ${h.kembali.toLocaleString('id-ID')}</span></div>
+                        </div>
+                    </div>
+                </div>`;
         });
     });
+
+    // FUNGSI UNTUK BUKA/TUTUP RINCIAN
+    function toggleDetails(id) {
+        const detail = document.getElementById('details-' + id);
+        const arrow = document.getElementById('arrow-' + id);
+        if (detail.style.display === "block") {
+            detail.style.display = "none";
+            arrow.innerHTML = "▼";
+        } else {
+            detail.style.display = "block";
+            arrow.innerHTML = "▲";
+        }
+    }
 
     function renderGroupedMenu(filterText = "") {
         const container = document.getElementById('containerMenu');
         container.innerHTML = '';
         const kats = ["Makanan", "Minuman", "Rokok", "Jasa"];
         const cls = {"Makanan":"kat-makanan", "Minuman":"kat-minuman", "Rokok":"kat-rokok", "Jasa":"kat-jasa"};
-
         kats.forEach(kat => {
             const items = databaseMenu.filter(m => m.kategori === kat && m.nama.toLowerCase().includes(filterText.toLowerCase()));
             if (items.length > 0) {
@@ -181,7 +185,7 @@
                     const itemInK = keranjang.find(k => k.kode === item.kode);
                     const q = itemInK ? itemInK.qty : 0;
                     h += `<tr><td><strong>${item.nama}</strong><br><span style="font-size:9px; color:#999" onclick="editMenu(${idx})">Edit</span> | <span style="font-size:9px; color:#999" onclick="hapusMenu(${idx})">Hapus</span></td>
-                        <td style="font-weight:bold; color:#444;">${item.harga.toLocaleString('id-ID')}</td>
+                        <td style="font-weight:bold">${item.harga.toLocaleString('id-ID')}</td>
                         <td style="text-align:right"><div class="qty-control">
                             <button class="btn-minus" onclick="ubahQty(${idx}, -1)">-</button>
                             <span class="qty-num">${q}</span>
@@ -211,9 +215,8 @@
     function renderStruk() {
         const ds = document.getElementById('daftarStruk');
         ds.innerHTML = ''; totalSemua = 0;
-        if (keranjang.length === 0) ds.innerHTML = '<p style="text-align:center; color:#ccc; font-family:monospace;">(Kosong)</p>';
         keranjang.forEach((p) => {
-            ds.innerHTML += `<div class="struk-item"><span>${p.nama} (x${p.qty})</span><span>${p.subtotal.toLocaleString('id-ID')}</span></div>`;
+            ds.innerHTML += `<div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px dotted #ccc;"><span>${p.nama} (x${p.qty})</span><span>${p.subtotal.toLocaleString('id-ID')}</span></div>`;
             totalSemua += p.subtotal;
         });
         document.getElementById('teksTotal').innerText = totalSemua.toLocaleString('id-ID');
@@ -227,31 +230,24 @@
         const u = parseInt(document.getElementById('inputUang').value.replace(/[^0-9]/g, '')) || 0;
         const k = u - totalSemua;
         const t = document.getElementById('teksKembalian');
-        if (u === 0 || totalSemua === 0) { t.innerText = "Rp 0"; t.style.color = "#004085"; }
-        else if (k < 0) { t.innerText = "Kurang!"; t.style.color = "red"; }
-        else { t.innerText = "Rp " + k.toLocaleString('id-ID'); t.style.color = "#004085"; }
+        if (u === 0 || totalSemua === 0) t.innerText = "Rp 0";
+        else t.innerText = k < 0 ? "Kurang!" : "Rp " + k.toLocaleString('id-ID');
     }
 
     function selesaikanTransaksi() {
-        if (keranjang.length === 0) return alert("Keranjang kosong!");
+        if (keranjang.length === 0) return;
         const u = parseInt(document.getElementById('inputUang').value.replace(/[^0-9]/g, '')) || 0;
         if (u < totalSemua) return alert("Uang kurang!");
-        
         const b = keranjang.map(p => `${p.nama} (${p.qty})`).join(", ");
-        const j = new Date().toLocaleTimeString('id-ID');
-        db.ref('bengkel/history').push({ waktu: j, barang: b, total: totalSemua });
+        db.ref('bengkel/history').push({ waktu: new Date().toLocaleTimeString('id-ID'), barang: b, total: totalSemua, bayar: u, kembali: u - totalSemua });
         db.ref('bengkel/pendapatan').transaction(t => (t || 0) + totalSemua);
-        
         keranjang = []; document.getElementById('inputUang').value = ''; renderStruk(); renderGroupedMenu();
-        alert("Transaksi Sukses & Tersimpan!");
+        alert("Selesai!");
     }
 
-    // Fungsi Manajemen
     function tambahMenuBaru() {
-        const n = document.getElementById('namaBaru').value;
-        const k = document.getElementById('katBaru').value;
-        const h = parseInt(document.getElementById('hargaBaru').value.replace(/[^0-9]/g, ''));
-        if (!n || isNaN(h)) return alert("Isi nama & harga!");
+        const n = document.getElementById('namaBaru').value; const k = document.getElementById('katBaru').value; const h = parseInt(document.getElementById('hargaBaru').value.replace(/[^0-9]/g, ''));
+        if (!n || isNaN(h)) return alert("Isi data!");
         let kd = databaseMenu.length > 0 ? Math.max(...databaseMenu.map(m => m.kode)) + 1 : 1;
         databaseMenu.push({ kode: kd, nama: n, harga: h, kategori: k });
         db.ref('bengkel/menu').set(databaseMenu);
@@ -260,25 +256,12 @@
 
     function editMenu(i) {
         let n = prompt("Nama baru:", databaseMenu[i].nama);
-        if (n) { 
-            let h = prompt("Harga baru (angka):", databaseMenu[i].harga);
-            databaseMenu[i].nama = n;
-            databaseMenu[i].harga = parseInt(h.replace(/[^0-9]/g, ''));
-            db.ref('bengkel/menu').set(databaseMenu);
-        }
+        if (n) { let h = prompt("Harga baru:", databaseMenu[i].harga); databaseMenu[i].nama = n; databaseMenu[i].harga = parseInt(h.replace(/[^0-9]/g, '')); db.ref('bengkel/menu').set(databaseMenu); }
     }
-
-    function hapusMenu(i) { if(confirm("Hapus barang?")) { databaseMenu.splice(i, 1); db.ref('bengkel/menu').set(databaseMenu); } }
+    function hapusMenu(i) { if(confirm("Hapus?")) { databaseMenu.splice(i, 1); db.ref('bengkel/menu').set(databaseMenu); } }
     function resetHistorySaja() { if(confirm("Hapus history?")) db.ref('bengkel/history').remove(); }
     function resetUangSaja() { if(confirm("Reset pendapatan?")) db.ref('bengkel/pendapatan').set(0); }
-    function resetSemua() { if(confirm("Hapus semua data?")) { db.ref('bengkel/pendapatan').set(0); db.ref('bengkel/history').remove(); } }
-
-    function tambahPesanan() {
-        const s = document.getElementById('inputCari').value.trim();
-        const it = databaseMenu.find(m => m.kode.toString() === s || m.nama.toLowerCase() === s.toLowerCase());
-        if (it) { ubahQty(databaseMenu.indexOf(it), 1); document.getElementById('inputCari').value = ''; }
-    }
+    function resetSemua() { if(confirm("Hapus semua?")) { db.ref('bengkel/pendapatan').set(0); db.ref('bengkel/history').remove(); } }
 </script>
 </body>
-    </html>
-    
+</html>
