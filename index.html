@@ -150,114 +150,261 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kasir Bengkel Cloud Sync</title>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kasir Bengkel Super Pro</title>
     <style>
-        body { font-family: sans-serif; padding: 15px; background: #f0f2f5; color: #333; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        h2, h3 { text-align: center; color: #1a73e8; margin-top: 0; }
-        .laporan { font-size: 32px; text-align: center; font-weight: bold; color: #28a745; margin: 15px 0; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        button { width: 100%; padding: 14px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; }
-        .btn-biru { background: #1a73e8; } .btn-hijau { background: #34a853; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background: #f8f9fa; }
+        body { font-family: Arial, sans-serif; padding: 10px; max-width: 500px; margin: auto; background-color: #f4f4f9; color: #333; }
+        .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        h3 { margin-top: 0; text-align: center; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 14px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f8f9fa; }
+        .kode-kolom { text-align: center; font-weight: bold; color: #007bff; width: 30px; }
+        
+        .input-group { display: flex; gap: 5px; margin-bottom: 10px; }
+        .input-group input { padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
+        #inputKode { width: 40%; } #inputQty { width: 25%; }
+        
+        button { border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; padding: 10px; width: 100%; }
+        .btn-input { background: #007bff; width: 35%; }
+        .btn-hijau { background: #28a745; margin-top: 5px; }
+        .btn-merah { background: #dc3545; padding: 5px 10px; font-size: 12px; width: auto; }
+        .btn-selesai { background: #17a2b8; margin-top: 15px; font-size: 16px; padding: 12px; }
+        .btn-reset-hari { background: #6c757d; margin-top: 10px; font-size: 14px; }
+
+        .struk-item { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px; border-bottom: 1px dashed #eee; padding-bottom: 5px; }
+        .total-box { margin-top: 15px; border-top: 2px solid #333; padding-top: 10px; }
+        .baris-total { display: flex; justify-content: space-between; font-weight: bold; font-size: 16px; margin-bottom: 10px; align-items: center; }
+        
+        .input-uang { width: 120px; text-align: right; padding: 8px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; font-weight: bold; }
+        .kembalian-teks { color: #28a745; font-size: 20px; }
+        .laporan-teks { color: #007bff; font-size: 24px; text-align: center; margin: 10px 0; }
+        .error { color: red; font-size: 12px; text-align: center; display: none; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>Total Pendapatan Hari Ini</h2>
-    <div class="laporan">Rp <span id="totalPemasukan">0</span></div>
-    <button class="btn-biru" style="background:#6c757d; font-size:12px;" onclick="resetLaporan()">Reset Laporan (Tutup Bengkel)</button>
+<div class="card" style="border-left: 5px solid #007bff;">
+    <h3>Total Pemasukan Hari Ini</h3>
+    <div class="laporan-teks">Rp <span id="teksPendapatan">0</span></div>
+    <button class="btn-reset-hari" onclick="resetPendapatanHariIni()">Tutup Warung (Reset Laporan)</button>
 </div>
 
 <div class="card">
-    <h3>Pengaturan Menu</h3>
-    <input type="text" id="namaItem" placeholder="Nama Barang/Jasa">
-    <input type="number" id="hargaItem" placeholder="Harga (Contoh: 15000)">
-    <button class="btn-biru" onclick="simpanMenu()">+ Tambah Menu Baru</button>
-    <table id="tabelMenu"></table>
+    <h3>Daftar & Pengaturan Menu</h3>
+    <div class="input-group">
+        <input type="text" id="namaBaru" placeholder="Nama Jasa/Barang" style="width: 60%;">
+        <input type="text" id="hargaBaru" placeholder="Harga" style="width: 40%;" oninput="formatInputUang(this)">
+    </div>
+    <button class="btn-hijau" onclick="tambahMenuBaru()">+ Tambah Menu Baru</button>
+
+    <table style="margin-top: 15px;">
+        <thead>
+            <tr><th>No</th><th>Nama</th><th>Harga</th><th>Aksi</th></tr>
+        </thead>
+        <tbody id="tabelMenu"></tbody>
+    </table>
 </div>
 
 <div class="card">
     <h3>Input Kasir</h3>
-    <input type="number" id="kodeMenu" placeholder="Masukkan Nomor Menu">
-    <button class="btn-hijau" onclick="tambahTransaksi()">PROSES TRANSAKSI</button>
+    <div class="input-group">
+        <input type="number" id="inputKode" placeholder="Kode">
+        <input type="number" id="inputQty" placeholder="Qty" value="1">
+        <button class="btn-input" onclick="tambahPesanan()">+ INPUT</button>
+    </div>
+    <p id="pesanError" class="error">Kode tidak ditemukan!</p>
+</div>
+
+<div class="card">
+    <h3>Struk Pesanan</h3>
+    <div id="daftarStruk" style="min-height: 50px;"><div style="text-align: center; color: #999;">Kosong...</div></div>
+    
+    <div class="total-box">
+        <div class="baris-total"><span>TOTAL:</span><span>Rp <span id="teksTotal">0</span></span></div>
+        <div class="baris-total" style="font-weight: normal;">
+            <span>Uang Pelanggan:</span>
+            <input type="text" id="inputUang" class="input-uang" placeholder="0" oninput="formatInputUangBeli(this)">
+        </div>
+        <div class="baris-total"><span>KEMBALIAN:</span><span id="teksKembalian" class="kembalian-teks">Rp 0</span></div>
+    </div>
+    
+    <button class="btn-selesai" onclick="selesaikanTransaksi()">Selesaikan Transaksi</button>
 </div>
 
 <script>
-    // --- KODE CONFIG DARI SCREENSHOT KAMU ---
-    const firebaseConfig = {
-      apiKey: "AIzaSyAD9yuW_Cjibee-xv2a81LQPFd04sYULVA8",
-      authDomain: "kasir-nosa.firebaseapp.com",
-      databaseURL: "https://kasir-nosa-default-rtdb.firebaseio.com", // Saya tambahkan ini agar konek ke Database
-      projectId: "kasir-nosa",
-      storageBucket: "kasir-nosa.firebasestorage.app",
-      messagingSenderId: "512291099629",
-      appId: "1:512291099629:web:4f4e8687bf4f236fa44da4"
-    };
+    let databaseMenu = [];
+    let keranjang = [];
+    let totalSemua = 0;
+    let pendapatanHariIni = 0;
 
-    // Jalankan Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    // 1. MEMBACA MEMORI (V3 - Memori Bersih)
+    try {
+        let simpananMenu = localStorage.getItem('dataBengkelV3');
+        if (simpananMenu) databaseMenu = JSON.parse(simpananMenu);
+        
+        let simpananUang = localStorage.getItem('uangBengkelV3');
+        if (simpananUang) pendapatanHariIni = parseInt(simpananUang);
+    } catch (error) { console.log("Memori gagal dibaca."); }
 
-    // 1. Ambil Pendapatan Realtime
-    db.ref('pendapatan_total').on('value', (s) => {
-        const total = s.val() || 0;
-        document.getElementById('totalPemasukan').innerText = total.toLocaleString('id-ID');
-    });
+    if (!Array.isArray(databaseMenu) || databaseMenu.length === 0) {
+        databaseMenu = [
+            { kode: 1, nama: "Tambal Ban", harga: 15000 },
+            { kode: 2, nama: "Ganti Oli", harga: 45000 }
+        ];
+    }
 
-    // 2. Ambil Daftar Menu Realtime
-    db.ref('list_menu').on('value', (s) => {
-        const data = s.val() || [];
-        let html = '<tr><th>No</th><th>Nama</th><th>Harga</th></tr>';
-        data.forEach((m, index) => {
-            html += `<tr><td>${index + 1}</td><td>${m.nama}</td><td>Rp ${m.harga.toLocaleString('id-ID')}</td></tr>`;
-        });
-        document.getElementById('tabelMenu').innerHTML = html;
-    });
+    document.getElementById('teksPendapatan').innerText = pendapatanHariIni.toLocaleString('id-ID');
 
-    // 3. Fungsi Simpan Menu
-    function simpanMenu() {
-        const nama = document.getElementById('namaItem').value;
-        const harga = parseInt(document.getElementById('hargaItem').value);
-        if(!nama || !harga) return alert("Lengkapi nama & harga!");
+    function simpanKeMemori() {
+        localStorage.setItem('dataBengkelV3', JSON.stringify(databaseMenu));
+    }
 
-        db.ref('list_menu').once('value', (s) => {
-            let list = s.val() || [];
-            list.push({ nama, harga });
-            db.ref('list_menu').set(list);
-            document.getElementById('namaItem').value = '';
-            document.getElementById('hargaItem').value = '';
-            alert("Menu tersimpan di Cloud!");
+    // 2. FUNGSI TITIK OTOMATIS YANG AMAN DARI ERROR
+    function formatInputUangBeli(elemen) {
+        let angkaMurni = elemen.value.replace(/[^0-9]/g, ''); // Sapu bersih selain angka
+        if (angkaMurni !== "") elemen.value = parseInt(angkaMurni).toLocaleString('id-ID');
+        else elemen.value = "";
+        hitungKembalian(); 
+    }
+
+    function formatInputUang(elemen) {
+        let angkaMurni = elemen.value.replace(/[^0-9]/g, '');
+        if (angkaMurni !== "") elemen.value = parseInt(angkaMurni).toLocaleString('id-ID');
+        else elemen.value = "";
+    }
+
+    // 3. RENDER MENU & TAMBAH MENU
+    function renderMenu() {
+        const tabel = document.getElementById('tabelMenu');
+        tabel.innerHTML = '';
+        databaseMenu.forEach((item, index) => {
+            tabel.innerHTML += `
+                <tr>
+                    <td class="kode-kolom">${item.kode}</td>
+                    <td>${item.nama}</td>
+                    <td>Rp ${item.harga.toLocaleString('id-ID')}</td>
+                    <td style="text-align: center;"><button class="btn-merah" onclick="hapusMenu(${index})">X</button></td>
+                </tr>
+            `;
         });
     }
 
-    // 4. Fungsi Transaksi
-    function tambahTransaksi() {
-        const kode = parseInt(document.getElementById('kodeMenu').value) - 1;
-        db.ref('list_menu').once('value', (s) => {
-            const list = s.val() || [];
-            if(list[kode]) {
-                const harga = list[kode].harga;
-                db.ref('pendapatan_total').transaction(c => (c || 0) + harga);
-                document.getElementById('kodeMenu').value = '';
-                alert("Berhasil! Data terkirim ke semua HP.");
-            } else {
-                alert("Kode menu salah!");
-            }
-        });
+    function tambahMenuBaru() {
+        const nama = document.getElementById('namaBaru').value;
+        // INI KUNCI PERBAIKANNYA: Hapus semua simbol/huruf apa pun sebelum diubah jadi angka
+        const hargaTeks = document.getElementById('hargaBaru').value.replace(/[^0-9]/g, ''); 
+        const harga = parseInt(hargaTeks);
+
+        if (nama === "" || isNaN(harga)) {
+            alert("GAGAL: Nama dan Harga harus diisi dengan benar!");
+            return;
+        }
+
+        let kodeBaru = 1;
+        if (databaseMenu.length > 0) {
+            kodeBaru = databaseMenu[databaseMenu.length - 1].kode + 1;
+        }
+        
+        databaseMenu.push({ kode: kodeBaru, nama: nama, harga: harga });
+        simpanKeMemori();
+        renderMenu();
+
+        document.getElementById('namaBaru').value = '';
+        document.getElementById('hargaBaru').value = '';
     }
 
-    // 5. Fungsi Reset
-    function resetLaporan() {
-        if(confirm("Yakin ingin mereset pendapatan hari ini ke 0?")) {
-            db.ref('pendapatan_total').set(0);
+    function hapusMenu(index) {
+        if(confirm("Hapus menu ini?")) {
+            databaseMenu.splice(index, 1);
+            databaseMenu.forEach((item, i) => { item.kode = i + 1; });
+            simpanKeMemori();
+            renderMenu();
         }
     }
+
+    // 4. KASIR & KERANJANG
+    function tambahPesanan() {
+        const inputKode = document.getElementById('inputKode');
+        const inputQty = document.getElementById('inputQty');
+        const kodeDiketik = parseInt(inputKode.value);
+        const qtyDiketik = parseInt(inputQty.value) || 1;
+        const errorMsg = document.getElementById('pesanError');
+
+        const item = databaseMenu.find(m => m.kode === kodeDiketik);
+
+        if (item) {
+            errorMsg.style.display = 'none'; 
+            keranjang.push({ nama: item.nama, qty: qtyDiketik, subtotal: item.harga * qtyDiketik });
+            inputKode.value = ''; inputQty.value = '1'; inputKode.focus(); 
+            perbaruiStruk(); 
+        } else {
+            errorMsg.style.display = 'block'; 
+        }
+    }
+
+    function perbaruiStruk() {
+        const layarStruk = document.getElementById('daftarStruk');
+        if (keranjang.length === 0) {
+            layarStruk.innerHTML = '<div style="text-align: center; color: #999;">Kosong...</div>';
+            totalSemua = 0;
+        } else {
+            layarStruk.innerHTML = ''; totalSemua = 0;
+            keranjang.forEach(p => {
+                layarStruk.innerHTML += `<div class="struk-item"><span>${p.nama} (x${p.qty})</span><span>Rp ${p.subtotal.toLocaleString('id-ID')}</span></div>`;
+                totalSemua += p.subtotal;
+            });
+        }
+        document.getElementById('teksTotal').innerText = totalSemua.toLocaleString('id-ID');
+        hitungKembalian(); 
+    }
+
+    function hitungKembalian() {
+        // Hapus simbol apa pun sebelum dihitung matematikanya
+        const uangTeks = document.getElementById('inputUang').value.replace(/[^0-9]/g, '');
+        const uangMasuk = parseInt(uangTeks) || 0;
+        
+        const kembalian = uangMasuk - totalSemua;
+        const teks = document.getElementById('teksKembalian');
+
+        if (uangMasuk === 0 || totalSemua === 0) { teks.innerText = "Rp 0"; teks.style.color = "#28a745"; } 
+        else if (kembalian < 0) { teks.innerText = "Kurang!"; teks.style.color = "red"; } 
+        else { teks.innerText = "Rp " + kembalian.toLocaleString('id-ID'); teks.style.color = "#28a745"; }
+    }
+
+    // 5. TRANSAKSI & LAPORAN HARIAN
+    function selesaikanTransaksi() {
+        if (keranjang.length === 0) return alert("Belum ada pesanan di keranjang!");
+        
+        const uangTeks = document.getElementById('inputUang').value.replace(/[^0-9]/g, '');
+        const uangMasuk = parseInt(uangTeks) || 0;
+
+        if (uangMasuk < totalSemua) return alert("Uang pelanggan masih kurang!");
+
+        pendapatanHariIni += totalSemua;
+        localStorage.setItem('uangBengkelV3', pendapatanHariIni);
+        
+        document.getElementById('teksPendapatan').innerText = pendapatanHariIni.toLocaleString('id-ID');
+
+        keranjang = []; 
+        document.getElementById('inputUang').value = ''; 
+        perbaruiStruk();
+    }
+
+    function resetPendapatanHariIni() {
+        if(confirm("Yakin ingin mereset total pemasukan?")) {
+            pendapatanHariIni = 0;
+            localStorage.setItem('uangBengkelV3', 0);
+            document.getElementById('teksPendapatan').innerText = "0";
+        }
+    }
+
+    renderMenu();
 </script>
 </body>
 </html>
