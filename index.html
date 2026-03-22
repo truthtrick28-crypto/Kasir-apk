@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kasir Super Pro v5</title>
+    <title>Kasir Super Pro v7 (Secure Sync)</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     
     <style>
-        body { font-family: sans-serif; padding: 10px; max-width: 500px; margin: auto; background-color: #ffffff; color: #333; }
-        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 15px; border: 1px solid #eee; }
-        h3 { text-align: center; color: #444; border-bottom: 2px solid #f1f3f5; padding-bottom: 10px; }
+        body { font-family: sans-serif; padding: 10px; max-width: 500px; margin: auto; background-color: #f8f9fa; color: #333; }
+        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 15px; border: 1px solid #eee; }
+        h3 { text-align: center; color: #444; border-bottom: 2px solid #f1f3f5; padding-bottom: 10px; margin-top: 0; }
         
         .judul-kategori { background: #6c757d; color: white; padding: 4px 10px; border-radius: 5px; font-size: 11px; display: inline-block; margin: 10px 0 5px 0; font-weight: bold; }
         .kat-makanan { background: #e67e22; } .kat-minuman { background: #3498db; } .kat-rokok { background: #e74c3c; } .kat-jasa { background: #9b59b6; }
@@ -20,14 +20,25 @@
         td { border-bottom: 1px solid #f1f3f5; padding: 12px 8px; }
         
         button { border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.1s; display: flex; align-items: center; justify-content: center; }
+        button:active { transform: scale(0.97); }
         .btn-pilih { background: #f0f2f5; color: #28a745; padding: 10px 15px; font-size: 20px; border: 1px solid #ddd; }
         .btn-hijau { background: #28a745; color: white; padding: 15px; width: 100%; font-size: 16px; }
         .btn-biru { background: #007bff; color: white; padding: 12px; width: 100%; }
         
-        /* TOMBOL BATAL YANG HARUSNYA KELIHATAN */
-        .struk-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed #ccc; }
-        .btn-batal-merah { background: #ff4d4d; color: white; padding: 5px 10px; font-size: 10px; border-radius: 5px; width: auto; margin-left: 10px; }
+        /* TOMBOL KONTROL BARU */
+        .btn-group-reset { display: flex; gap: 5px; margin-top: 10px; flex-wrap: wrap; }
+        .btn-small { padding: 8px; font-size: 10px; flex: 1; min-width: 100px; }
+        .bg-abu { background: #adb5bd; color: white; }
+        .bg-oranye { background: #fd7e14; color: white; }
+        .bg-merah { background: #dc3545; color: white; }
+
+        .struk-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed #ccc; font-size: 14px; }
+        .btn-batal-merah { background: #ff4d4d; color: white; padding: 4px 8px; font-size: 9px; border-radius: 4px; width: auto; margin-left: 10px; }
         
+        .history-item { font-size: 12px; padding: 10px; border-left: 4px solid #28a745; background: #f9f9f9; margin-bottom: 8px; border-radius: 0 8px 8px 0; }
+        .history-waktu { color: #888; font-size: 10px; margin-bottom: 3px; }
+        .history-total { font-weight: bold; color: #28a745; float: right; }
+
         .total-box { margin-top: 15px; border-top: 2px solid #333; padding-top: 10px; }
         .baris-total { display: flex; justify-content: space-between; font-weight: bold; font-size: 20px; margin-bottom: 10px; }
         .laporan-teks { color: #007bff; font-size: 30px; text-align: center; font-weight: bold; }
@@ -38,34 +49,39 @@
 <div class="card">
     <h3>Pemasukan Hari Ini</h3>
     <div class="laporan-teks">Rp <span id="teksPendapatan">0</span></div>
-    <button style="background:#eee; color:#666; width:100%; padding:5px; margin-top:10px;" onclick="resetPendapatanHariIni()">Tutup Toko</button>
+    
+    <div class="btn-group-reset">
+        <button class="btn-small bg-abu" onclick="resetHistorySaja()">Hapus Riwayat Saja</button>
+        <button class="btn-small bg-oranye" onclick="resetUangSaja()">Reset Uang Saja</button>
+        <button class="btn-small bg-merah" style="width:100%; flex:none;" onclick="resetSemua()">Tutup Toko (Hapus Semua)</button>
+    </div>
 </div>
 
 <div class="card">
     <h3>Daftar Menu</h3>
     <div id="containerMenu"></div>
-    <div style="margin-top:20px; background:#f9f9f9; padding:10px; border-radius:8px;">
-        <p style="font-weight:bold; font-size:12px; margin-bottom:5px;">+ Tambah Menu</p>
-        <input type="text" id="namaBaru" placeholder="Nama Barang" style="width:92%; padding:10px; margin-bottom:5px;">
-        <select id="katBaru" style="width:100%; padding:10px; margin-bottom:5px;">
+    <div style="margin-top:20px; border-top: 1px solid #eee; padding-top:10px;">
+        <p style="font-weight:bold; font-size:12px; color:#999;">+ Tambah Barang</p>
+        <input type="text" id="namaBaru" placeholder="Nama Barang" style="width:92%; padding:10px; margin-bottom:5px; border:1px solid #ddd; border-radius:5px;">
+        <select id="katBaru" style="width:100%; padding:10px; margin-bottom:5px; border:1px solid #ddd; border-radius:5px;">
             <option value="Makanan">Makanan</option>
             <option value="Minuman">Minuman</option>
             <option value="Rokok">Rokok</option>
             <option value="Jasa">Jasa</option>
         </select>
-        <input type="text" id="hargaBaru" placeholder="Harga" style="width:92%; padding:10px; margin-bottom:10px;" oninput="formatInputUang(this)">
-        <button class="btn-hijau" onclick="tambahMenuBaru()">Simpan ke Cloud</button>
+        <input type="text" id="hargaBaru" placeholder="Harga" style="width:92%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:5px;" oninput="formatInputUang(this)">
+        <button class="btn-hijau" onclick="tambahMenuBaru()">Simpan Menu</button>
     </div>
 </div>
 
 <div class="card" style="border-top: 5px solid #007bff;">
     <h3>Input Kode/Nama</h3>
-    <input type="text" id="inputCari" placeholder="Contoh: 1 atau Ayam" style="width:92%; padding:12px; margin-bottom:10px;">
+    <input type="text" id="inputCari" placeholder="Contoh: 1 atau Ayam" style="width:92%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;">
     <button class="btn-biru" onclick="tambahPesanan()">MASUKKAN KE STRUK</button>
 </div>
 
 <div class="card" style="border-top: 5px solid #28a745;">
-    <h3>Struk Belanja (Warna Putih)</h3>
+    <h3>Struk Belanja</h3>
     <div id="daftarStruk"></div>
     <div class="total-box">
         <div class="baris-total"><span>TOTAL:</span><span>Rp <span id="teksTotal">0</span></span></div>
@@ -76,6 +92,13 @@
         <div class="baris-total" style="color:#28a745;"><span>KEMBALI:</span><span id="teksKembalian">Rp 0</span></div>
     </div>
     <button class="btn-hijau" style="height:60px; font-size:20px;" onclick="selesaikanTransaksi()">SIMPAN TRANSAKSI</button>
+</div>
+
+<div class="card" style="border-top: 5px solid #6c757d;">
+    <h3>Riwayat Penjualan (History)</h3>
+    <div id="containerHistory" style="max-height: 300px; overflow-y: auto;">
+        <p style="text-align:center; color:#ccc; font-size:12px;">Belum ada penjualan.</p>
+    </div>
 </div>
 
 <script>
@@ -97,6 +120,16 @@
     
     db.ref('bengkel/pendapatan').on('value', (s) => { document.getElementById('teksPendapatan').innerText = (s.val() || 0).toLocaleString('id-ID'); });
     db.ref('bengkel/menu').on('value', (s) => { databaseMenu = s.val() || []; renderGroupedMenu(); });
+    db.ref('bengkel/history').on('value', (s) => {
+        const data = s.val();
+        const container = document.getElementById('containerHistory');
+        container.innerHTML = '';
+        if(!data) { container.innerHTML = '<p style="text-align:center; color:#ccc; font-size:12px;">Kosong.</p>'; return; }
+        Object.keys(data).reverse().forEach(key => {
+            const h = data[key];
+            container.innerHTML += `<div class="history-item"><div class="history-waktu">${h.waktu}</div><span class="history-total">Rp ${h.total.toLocaleString('id-ID')}</span><div>${h.barang}</div></div>`;
+        });
+    });
 
     function renderGroupedMenu() {
         const container = document.getElementById('containerMenu');
@@ -127,15 +160,17 @@
         ds.innerHTML = ''; totalSemua = 0;
         if (keranjang.length === 0) ds.innerHTML = '<p style="text-align:center; color:#ccc;">(Kosong)</p>';
         keranjang.forEach((p, i) => {
-            ds.innerHTML += `<div class="struk-item">
-                <span><strong>${p.nama}</strong></span>
-                <span>Rp ${p.subtotal.toLocaleString('id-ID')} <button class="btn-batal-merah" onclick="hapusSatuItem(${i})">BATAL</button></span>
-            </div>`;
+            ds.innerHTML += `<div class="struk-item"><span><strong>${p.nama}</strong></span><span>Rp ${p.subtotal.toLocaleString('id-ID')} <button class="btn-batal-merah" onclick="hapusSatuItem(${i})">BATAL</button></span></div>`;
             totalSemua += p.subtotal;
         });
         document.getElementById('teksTotal').innerText = totalSemua.toLocaleString('id-ID');
         hitungKembalian();
     }
+
+    // LOGIKA RESET TERPISAH
+    function resetHistorySaja() { if(confirm("Hapus catatan riwayat saja? (Angka pendapatan TETAP)")) db.ref('bengkel/history').remove(); }
+    function resetUangSaja() { if(confirm("Reset angka pendapatan ke Rp 0? (Catatan riwayat TETAP)")) db.ref('bengkel/pendapatan').set(0); }
+    function resetSemua() { if(confirm("Hapus SEMUA data hari ini?")) { db.ref('bengkel/pendapatan').set(0); db.ref('bengkel/history').remove(); } }
 
     function formatInputUangBeli(el) { let v = el.value.replace(/[^0-9]/g, ''); el.value = v ? parseInt(v).toLocaleString('id-ID') : ''; hitungKembalian(); }
     function formatInputUang(el) { let v = el.value.replace(/[^0-9]/g, ''); el.value = v ? parseInt(v).toLocaleString('id-ID') : ''; }
@@ -153,7 +188,7 @@
 
     function editMenu(i) {
         let n = prompt("Nama baru:", databaseMenu[i].nama);
-        if (n) { let h = prompt("Harga baru:", databaseMenu[i].harga); databaseMenu[i].nama = n; databaseMenu[i].harga = parseInt(h.replace(/[^0-9]/g, '')); db.ref('bengkel/menu').set(databaseMenu); }
+        if (n) { let h = prompt("Harga baru:", databaseMenu[i].harga); databaseMenu[i].nama = n; databaseMenu[i].harga = parseInt(h.toString().replace(/[^0-9]/g, '')); db.ref('bengkel/menu').set(databaseMenu); }
     }
 
     function hapusMenu(i) { if(confirm("Hapus?")) { databaseMenu.splice(i, 1); db.ref('bengkel/menu').set(databaseMenu); } }
@@ -174,12 +209,13 @@
         if (keranjang.length === 0) return;
         const u = parseInt(document.getElementById('inputUang').value.replace(/[^0-9]/g, '')) || 0;
         if (u < totalSemua) return alert("Uang kurang!");
+        const daftarBarang = keranjang.map(p => p.nama).join(", ");
+        const jam = new Date().toLocaleTimeString('id-ID');
+        db.ref('bengkel/history').push({ waktu: jam, barang: daftarBarang, total: totalSemua });
         db.ref('bengkel/pendapatan').transaction(t => (t || 0) + totalSemua);
         keranjang = []; document.getElementById('inputUang').value = ''; renderStruk();
-        alert("Transaksi Berhasil!");
+        alert("Berhasil!");
     }
-
-    function resetPendapatanHariIni() { if(confirm("Reset?")) db.ref('bengkel/pendapatan').set(0); }
 </script>
 </body>
 </html>
