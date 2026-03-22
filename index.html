@@ -145,115 +145,119 @@
 
     function tambahMenuBaru() {
         const nama = document.getElementById('namaBaru').value;
-        // INI KUNCI PERBAIKANNYA: Hapus semua simbol/huruf apa pun sebelum diubah jadi angka
-        const hargaTeks = document.getElementById('hargaBaru').value.replace(/[^0-9]/g, ''); 
-        const harga = parseInt(hargaTeks);
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kasir Bengkel Cloud Sync</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 15px; background: #f0f2f5; color: #333; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h2, h3 { text-align: center; color: #1a73e8; margin-top: 0; }
+        .laporan { font-size: 32px; text-align: center; font-weight: bold; color: #28a745; margin: 15px 0; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 14px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; }
+        .btn-biru { background: #1a73e8; } .btn-hijau { background: #34a853; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #f8f9fa; }
+    </style>
+</head>
+<body>
 
-        if (nama === "" || isNaN(harga)) {
-            alert("GAGAL: Nama dan Harga harus diisi dengan benar!");
-            return;
+<div class="card">
+    <h2>Total Pendapatan Hari Ini</h2>
+    <div class="laporan">Rp <span id="totalPemasukan">0</span></div>
+    <button class="btn-biru" style="background:#6c757d; font-size:12px;" onclick="resetLaporan()">Reset Laporan (Tutup Bengkel)</button>
+</div>
+
+<div class="card">
+    <h3>Pengaturan Menu</h3>
+    <input type="text" id="namaItem" placeholder="Nama Barang/Jasa">
+    <input type="number" id="hargaItem" placeholder="Harga (Contoh: 15000)">
+    <button class="btn-biru" onclick="simpanMenu()">+ Tambah Menu Baru</button>
+    <table id="tabelMenu"></table>
+</div>
+
+<div class="card">
+    <h3>Input Kasir</h3>
+    <input type="number" id="kodeMenu" placeholder="Masukkan Nomor Menu">
+    <button class="btn-hijau" onclick="tambahTransaksi()">PROSES TRANSAKSI</button>
+</div>
+
+<script>
+    // --- KODE CONFIG DARI SCREENSHOT KAMU ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyAD9yuW_Cjibee-xv2a81LQPFd04sYULVA8",
+      authDomain: "kasir-nosa.firebaseapp.com",
+      databaseURL: "https://kasir-nosa-default-rtdb.firebaseio.com", // Saya tambahkan ini agar konek ke Database
+      projectId: "kasir-nosa",
+      storageBucket: "kasir-nosa.firebasestorage.app",
+      messagingSenderId: "512291099629",
+      appId: "1:512291099629:web:4f4e8687bf4f236fa44da4"
+    };
+
+    // Jalankan Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // 1. Ambil Pendapatan Realtime
+    db.ref('pendapatan_total').on('value', (s) => {
+        const total = s.val() || 0;
+        document.getElementById('totalPemasukan').innerText = total.toLocaleString('id-ID');
+    });
+
+    // 2. Ambil Daftar Menu Realtime
+    db.ref('list_menu').on('value', (s) => {
+        const data = s.val() || [];
+        let html = '<tr><th>No</th><th>Nama</th><th>Harga</th></tr>';
+        data.forEach((m, index) => {
+            html += `<tr><td>${index + 1}</td><td>${m.nama}</td><td>Rp ${m.harga.toLocaleString('id-ID')}</td></tr>`;
+        });
+        document.getElementById('tabelMenu').innerHTML = html;
+    });
+
+    // 3. Fungsi Simpan Menu
+    function simpanMenu() {
+        const nama = document.getElementById('namaItem').value;
+        const harga = parseInt(document.getElementById('hargaItem').value);
+        if(!nama || !harga) return alert("Lengkapi nama & harga!");
+
+        db.ref('list_menu').once('value', (s) => {
+            let list = s.val() || [];
+            list.push({ nama, harga });
+            db.ref('list_menu').set(list);
+            document.getElementById('namaItem').value = '';
+            document.getElementById('hargaItem').value = '';
+            alert("Menu tersimpan di Cloud!");
+        });
+    }
+
+    // 4. Fungsi Transaksi
+    function tambahTransaksi() {
+        const kode = parseInt(document.getElementById('kodeMenu').value) - 1;
+        db.ref('list_menu').once('value', (s) => {
+            const list = s.val() || [];
+            if(list[kode]) {
+                const harga = list[kode].harga;
+                db.ref('pendapatan_total').transaction(c => (c || 0) + harga);
+                document.getElementById('kodeMenu').value = '';
+                alert("Berhasil! Data terkirim ke semua HP.");
+            } else {
+                alert("Kode menu salah!");
+            }
+        });
+    }
+
+    // 5. Fungsi Reset
+    function resetLaporan() {
+        if(confirm("Yakin ingin mereset pendapatan hari ini ke 0?")) {
+            db.ref('pendapatan_total').set(0);
         }
-
-        let kodeBaru = 1;
-        if (databaseMenu.length > 0) {
-            kodeBaru = databaseMenu[databaseMenu.length - 1].kode + 1;
-        }
-        
-        databaseMenu.push({ kode: kodeBaru, nama: nama, harga: harga });
-        simpanKeMemori();
-        renderMenu();
-
-        document.getElementById('namaBaru').value = '';
-        document.getElementById('hargaBaru').value = '';
     }
-
-    function hapusMenu(index) {
-        if(confirm("Hapus menu ini?")) {
-            databaseMenu.splice(index, 1);
-            databaseMenu.forEach((item, i) => { item.kode = i + 1; });
-            simpanKeMemori();
-            renderMenu();
-        }
-    }
-
-    // 4. KASIR & KERANJANG
-    function tambahPesanan() {
-        const inputKode = document.getElementById('inputKode');
-        const inputQty = document.getElementById('inputQty');
-        const kodeDiketik = parseInt(inputKode.value);
-        const qtyDiketik = parseInt(inputQty.value) || 1;
-        const errorMsg = document.getElementById('pesanError');
-
-        const item = databaseMenu.find(m => m.kode === kodeDiketik);
-
-        if (item) {
-            errorMsg.style.display = 'none'; 
-            keranjang.push({ nama: item.nama, qty: qtyDiketik, subtotal: item.harga * qtyDiketik });
-            inputKode.value = ''; inputQty.value = '1'; inputKode.focus(); 
-            perbaruiStruk(); 
-        } else {
-            errorMsg.style.display = 'block'; 
-        }
-    }
-
-    function perbaruiStruk() {
-        const layarStruk = document.getElementById('daftarStruk');
-        if (keranjang.length === 0) {
-            layarStruk.innerHTML = '<div style="text-align: center; color: #999;">Kosong...</div>';
-            totalSemua = 0;
-        } else {
-            layarStruk.innerHTML = ''; totalSemua = 0;
-            keranjang.forEach(p => {
-                layarStruk.innerHTML += `<div class="struk-item"><span>${p.nama} (x${p.qty})</span><span>Rp ${p.subtotal.toLocaleString('id-ID')}</span></div>`;
-                totalSemua += p.subtotal;
-            });
-        }
-        document.getElementById('teksTotal').innerText = totalSemua.toLocaleString('id-ID');
-        hitungKembalian(); 
-    }
-
-    function hitungKembalian() {
-        // Hapus simbol apa pun sebelum dihitung matematikanya
-        const uangTeks = document.getElementById('inputUang').value.replace(/[^0-9]/g, '');
-        const uangMasuk = parseInt(uangTeks) || 0;
-        
-        const kembalian = uangMasuk - totalSemua;
-        const teks = document.getElementById('teksKembalian');
-
-        if (uangMasuk === 0 || totalSemua === 0) { teks.innerText = "Rp 0"; teks.style.color = "#28a745"; } 
-        else if (kembalian < 0) { teks.innerText = "Kurang!"; teks.style.color = "red"; } 
-        else { teks.innerText = "Rp " + kembalian.toLocaleString('id-ID'); teks.style.color = "#28a745"; }
-    }
-
-    // 5. TRANSAKSI & LAPORAN HARIAN
-    function selesaikanTransaksi() {
-        if (keranjang.length === 0) return alert("Belum ada pesanan di keranjang!");
-        
-        const uangTeks = document.getElementById('inputUang').value.replace(/[^0-9]/g, '');
-        const uangMasuk = parseInt(uangTeks) || 0;
-
-        if (uangMasuk < totalSemua) return alert("Uang pelanggan masih kurang!");
-
-        pendapatanHariIni += totalSemua;
-        localStorage.setItem('uangBengkelV3', pendapatanHariIni);
-        
-        document.getElementById('teksPendapatan').innerText = pendapatanHariIni.toLocaleString('id-ID');
-
-        keranjang = []; 
-        document.getElementById('inputUang').value = ''; 
-        perbaruiStruk();
-    }
-
-    function resetPendapatanHariIni() {
-        if(confirm("Yakin ingin mereset total pemasukan?")) {
-            pendapatanHariIni = 0;
-            localStorage.setItem('uangBengkelV3', 0);
-            document.getElementById('teksPendapatan').innerText = "0";
-        }
-    }
-
-    renderMenu();
 </script>
 </body>
 </html>
-
