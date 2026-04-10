@@ -3,74 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kasir Super Pro v29 (Catat Pengeluaran)</title>
+    <title>Kasir Super Pro v39 (Anti-Crash & Super Kebal)</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
         body { font-family: 'Segoe UI', sans-serif; padding: 10px; max-width: 500px; margin: auto; background-color: #f0f2f5; color: #333; }
         .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; border: 1px solid #e1e4e8; }
         h3 { text-align: center; color: #1a73e8; margin-top: 0; padding-bottom: 10px; border-bottom: 2px solid #f1f3f5; text-transform: uppercase; font-size: 16px; letter-spacing: 1px; }
-        
         .judul-kategori { background: #6c757d; color: white; padding: 5px 12px; border-radius: 6px; font-size: 11px; display: inline-block; margin: 10px 0 8px 0; font-weight: bold; }
         .kat-makanan { background: #e67e22; } .kat-minuman { background: #3498db; } .kat-rokok { background: #e74c3c; } .kat-paket { background: #9b59b6; }
-        
-        table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        td { border-bottom: 1px solid #f1f3f5; padding: 12px 5px; }
-        
+        table { width: 100%; border-collapse: collapse; font-size: 14px; } td { border-bottom: 1px solid #f1f3f5; padding: 12px 5px; }
         .qty-control { display: flex; align-items: center; justify-content: space-between; border: 1.5px solid #ddd; border-radius: 30px; padding: 2px; background: #fff; width: 95px; margin: auto; }
         .btn-minus, .btn-plus { color: white; border-radius: 50%; width: 30px; height: 30px; font-size: 20px; border:none; cursor:pointer; }
-        .btn-minus { background: #ff4d4d; } .btn-plus { background: #28a745; }
-        .qty-num { font-weight: bold; min-width: 20px; text-align: center; }
-        
+        .btn-minus { background: #ff4d4d; } .btn-plus { background: #28a745; } .qty-num { font-weight: bold; min-width: 20px; text-align: center; }
         input, select { width: 100%; padding: 14px; border: 1.5px solid #ddd; border-radius: 10px; font-size: 15px; margin-bottom: 10px; box-sizing: border-box; outline: none; }
-        .search-menu-box { background: #fffde7; border-color: #fbc02d; font-weight: bold; }
-        .search-hutang-box { background: #fff; border-color: #dc3545; font-weight: normal; margin-bottom: 15px; }
-
+        .search-menu-box { background: #fffde7; border-color: #fbc02d; font-weight: bold; } .search-hutang-box { background: #fff; border-color: #dc3545; font-weight: normal; margin-bottom: 15px; }
         .total-display { text-align: center; padding: 20px 0; background: #f8fff9; border-radius: 10px; margin: 15px 0; border: 1px solid #d4edda; }
-        .total-harga { font-size: 42px; font-weight: 900; color: #155724; display: block; }
-        .input-bayar { font-size: 24px !important; font-weight: bold; text-align: center; color: #1a73e8; border: 2px solid #1a73e8 !important; }
+        .total-harga { font-size: 42px; font-weight: 900; color: #155724; display: block; } .input-bayar { font-size: 24px !important; font-weight: bold; text-align: center; color: #1a73e8; border: 2px solid #1a73e8 !important; }
         .kembali-angka { font-size: 28px; font-weight: bold; color: #004085; display: block; }
-
         .history-item { border: 1px solid #e1e4e8; border-radius: 10px; margin-bottom: 10px; overflow: hidden; background: white; border-left: 6px solid #28a745; }
         .history-header { display: flex; justify-content: space-between; align-items: center; padding: 15px; cursor: pointer; background: #fdfdfd; transition: 0.2s; }
-        .history-header:active { background: #f0f0f0; }
-        .header-time { font-family: monospace; font-weight: bold; color: #666; font-size: 14px; }
-        .header-total { font-weight: bold; color: #28a745; font-size: 16px; }
-        
-        .history-details { display: none; padding: 15px; border-top: 1px dashed #eee; background: #fafafa; }
-        .history-goods { font-size: 13px; color: #555; line-height: 1.5; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
-        .history-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .grid-box { background: white; padding: 8px; border-radius: 5px; border: 1px solid #eee; }
-        .grid-label { font-size: 9px; color: #999; font-weight: bold; display: block; }
-        .grid-value { font-weight: bold; font-size: 12px; }
-
-        .rekap-item { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 8px 0; font-size: 14px; font-weight: bold; color: #444; }
-        .rekap-qty { color: #1a73e8; font-size: 16px; background: #e7f3ff; padding: 2px 8px; border-radius: 10px; }
-
+        .header-time { font-family: monospace; font-weight: bold; color: #666; font-size: 14px; } .header-total { font-weight: bold; color: #28a745; font-size: 16px; }
+        .history-details { display: none; padding: 15px; border-top: 1px dashed #eee; background: #fafafa; } .history-goods { font-size: 13px; color: #555; line-height: 1.5; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+        .history-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } .grid-box { background: white; padding: 8px; border-radius: 5px; border: 1px solid #eee; } .grid-label { font-size: 9px; color: #999; font-weight: bold; display: block; } .grid-value { font-weight: bold; font-size: 12px; }
+        .rekap-item { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 8px 0; font-size: 14px; font-weight: bold; color: #444; } .rekap-qty { color: #1a73e8; font-size: 16px; background: #e7f3ff; padding: 2px 8px; border-radius: 10px; }
         .btn-simpan { color: white; width: 100%; padding: 18px; font-size: 16px; border-radius: 12px; font-weight: bold; border: none; cursor: pointer; }
         .btn-download { background: #1a73e8; color: white; width: 100%; padding: 14px; font-size: 14px; margin-top: 10px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; }
         .btn-reset-small { flex: 1; padding: 10px; font-size: 11px; background: #eee; color: #666; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; }
-        
-        .btn-aksi-menu { font-size: 10px; color: #1a73e8; cursor: pointer; text-decoration: underline; }
-        .btn-hapus-menu { font-size: 10px; color: #dc3545; cursor: pointer; text-decoration: underline; margin-left: 8px; }
+        .btn-aksi-menu { font-size: 10px; color: #1a73e8; cursor: pointer; text-decoration: underline; } .btn-hapus-menu { font-size: 10px; color: #dc3545; cursor: pointer; text-decoration: underline; margin-left: 8px; }
         .btn-hapus-transaksi { background: #dc3545; color: white; width: 100%; padding: 10px; margin-top: 10px; font-size: 12px; border-radius: 6px; font-weight: bold; border: none; cursor: pointer; }
-        
         .btn-hapus-struk { background: #dc3545; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; font-weight: bold; }
-        .btn-struk-min, .btn-struk-plus { color: white; border-radius: 4px; width: 22px; height: 22px; font-size: 14px; border:none; cursor:pointer; font-weight: bold; line-height: 1; padding: 0; }
-        .btn-struk-min { background: #ff4d4d; }
-        .btn-struk-plus { background: #28a745; }
-        
+        .btn-struk-min, .btn-struk-plus { color: white; border-radius: 4px; width: 22px; height: 22px; font-size: 14px; border:none; cursor:pointer; font-weight: bold; line-height: 1; padding: 0; } .btn-struk-min { background: #ff4d4d; } .btn-struk-plus { background: #28a745; }
         .hutang-box { border: 1px solid #e1e4e8; border-left: 5px solid #dc3545; padding: 15px; margin-bottom: 12px; border-radius: 8px; background: #fff; }
-        
-        .log-item { font-size: 11px; border-bottom: 1px dotted #ccc; padding: 6px 0; }
-        .log-time { color: #888; font-family: monospace; }
-        .log-user { font-weight: bold; color: #1a73e8; }
-        .log-action { color: #dc3545; font-weight: bold; }
-        
+        .log-item { font-size: 11px; border-bottom: 1px dotted #ccc; padding: 6px 0; } .log-time { color: #888; font-family: monospace; } .log-user { font-weight: bold; color: #1a73e8; } .log-action { color: #dc3545; font-weight: bold; }
         .swal2-popup { font-size: 14px !important; border-radius: 15px !important; }
     </style>
 </head>
@@ -87,24 +55,20 @@
     <button class="btn-simpan" onclick="catatPengeluaran()" style="background:#17a2b8; padding: 12px; margin-bottom: 10px; font-size: 14px;">💸 Catat Pengeluaran (Beli Stok dll)</button>
     
     <div style="display: flex; gap: 5px;">
-        <button class="btn-reset-small" onclick="resetHistorySaja()" style="background:#ffc107; color:#000;">🔒 Tutup Buku (Reset Harian)</button>
-        <button class="btn-reset-small" onclick="resetUangSaja()">🔒 Reset Uang ke 0</button>
+        <button class="btn-reset-small" onclick="resetHistorySaja()" style="background:#ffc107; color:#000;">Tutup Buku (Reset Harian)</button>
+        <button class="btn-reset-small" onclick="resetUangSaja()">Reset Uang ke 0</button>
     </div>
 </div>
 
 <div class="card" style="border-top: 5px solid #dc3545; background-color: #fff9f9;">
     <h3 style="color: #c0392b;">Buku Hutang Aktif</h3>
     <input type="text" id="cariDaftarHutang" class="search-menu-box search-hutang-box" placeholder="🔎 Cari nama pengutang..." oninput="renderBukuHutang()">
-    <div id="containerHutang">
-        <p style="text-align:center; color:#ccc; font-size: 12px;">Memuat data hutang...</p>
-    </div>
+    <div id="containerHutang"><p style="text-align:center; color:#ccc; font-size: 12px;">Memuat data hutang...</p></div>
 </div>
 
 <div class="card" style="border-left: 5px solid #fbc02d;">
     <h3 style="color: #f57f17;">Ringkasan Penjualan Hari Ini</h3>
-    <div id="containerRekap">
-        <p style="text-align:center; color:#ccc; font-size: 12px;">Belum ada penjualan.</p>
-    </div>
+    <div id="containerRekap"><p style="text-align:center; color:#ccc; font-size: 12px;">Belum ada penjualan.</p></div>
     <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee; text-align: center;">
         <span style="font-size: 11px; font-weight: bold; color: #999;">ESTIMASI PENDAPATAN BERSIH:</span><br>
         <div id="rekapTotalDuit" style="font-size: 22px; font-weight: 900; color: #1a73e8;">Rp 0</div>
@@ -118,12 +82,7 @@
 
     <div style="margin-top:25px; border-top: 2px dashed #eee; padding-top:15px;">
         <input type="text" id="namaBaru" placeholder="Nama Barang / Paket">
-        <select id="katBaru">
-            <option value="Makanan">Makanan</option>
-            <option value="Minuman">Minuman</option>
-            <option value="Rokok">Rokok</option>
-            <option value="Paket">Paket</option>
-        </select>
+        <select id="katBaru"><option value="Makanan">Makanan</option><option value="Minuman">Minuman</option><option value="Rokok">Rokok</option><option value="Paket">Paket</option><option value="Lainnya">Lainnya</option></select>
         <input type="text" id="hargaBaru" placeholder="Harga" oninput="formatInputUang(this)">
         <button style="background:#28a745; color:white; width:100%; padding:12px; border-radius:10px; font-weight:bold; border:none; cursor:pointer;" onclick="tambahMenuBaru()">Simpan Menu</button>
     </div>
@@ -132,14 +91,10 @@
 <div class="card" style="border-top: 8px solid #28a745;">
     <h3 style="color:#28a745">Struk Belanja</h3>
     <div id="daftarStruk" style="font-family:monospace; margin-bottom:10px;"></div>
-    <div class="total-display">
-        <span style="font-size:12px; color:#666; font-weight:bold;">TOTAL BELANJA</span>
-        <span class="total-harga">Rp <span id="teksTotal">0</span></span>
-    </div>
+    <div class="total-display"><span style="font-size:12px; color:#666; font-weight:bold;">TOTAL BELANJA</span><span class="total-harga">Rp <span id="teksTotal">0</span></span></div>
     <input type="text" id="inputUang" class="input-bayar" placeholder="UANG TUNAI BAYAR" oninput="formatInputUangBeli(this)">
     <div style="text-align:center; padding:15px; background:#e7f3ff; border-radius:10px; margin-top:10px; border:1px solid #b8daff;">
-        <span style="font-size:12px; color:#004085; font-weight:bold;">KEMBALIAN TUNAI:</span>
-        <span class="kembali-angka" id="teksKembalian">Rp 0</span>
+        <span style="font-size:12px; color:#004085; font-weight:bold;">KEMBALIAN TUNAI:</span><span class="kembali-angka" id="teksKembalian">Rp 0</span>
     </div>
     
     <div style="display: flex; gap: 10px; margin-top: 15px;">
@@ -159,43 +114,36 @@
     <button class="btn-download" onclick="simpanKeMemoriHP()">⬇️ Download Laporan HTML ke HP</button>
 </div>
 
-<div class="card" style="border-top: 5px solid #8e44ad; background: #fafafa;">
+<div class="card" id="cardLogAktivitas" style="border-top: 5px solid #8e44ad; background: #fafafa; display: none;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <h3 style="color: #8e44ad; margin: 0;">Log Aktivitas</h3>
+        <h3 style="color: #8e44ad; margin: 0;">Log Keamanan</h3>
         <button style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 10px; cursor: pointer; font-weight: bold;" onclick="bersihkanLogAktivitas()">🔒 Bersihkan Log</button>
     </div>
-    <div id="containerLogAktivitas" style="max-height: 250px; overflow-y: auto; background: #fff; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
-        <p style="text-align:center; color:#ccc; font-size: 12px;">Memuat log...</p>
-    </div>
+    <div id="containerLogAktivitas" style="max-height: 250px; overflow-y: auto; background: #fff; padding: 10px; border: 1px solid #ddd; border-radius: 8px;"></div>
+</div>
+
+<div style="text-align: center; margin-top: 20px; margin-bottom: 40px;">
+    <button onclick="toggleLogAktivitas()" style="background: none; border: none; color: #bbb; font-size: 11px; cursor: pointer;">🕵️ Buka Log Keamanan</button>
 </div>
 
 <script>
-    const PIN_ADMIN = "123456"; 
+    // PIN HANYA UNTUK LOG
+    const PIN_LOG = "123456"; 
 
     const firebaseConfig = {
-      apiKey: "AIzaSyAD9yuW_Cjibee-xv2a81LQPFd04sYULVA8",
-      authDomain: "kasir-nosa.firebaseapp.com",
-      databaseURL: "https://kasir-nosa-default-rtdb.firebaseio.com",
-      projectId: "kasir-nosa",
-      storageBucket: "kasir-nosa.firebasestorage.app",
-      messagingSenderId: "512291099629",
-      appId: "1:512291099629:web:4f4e8687bf4f236fa44da4"
+      apiKey: "AIzaSyAD9yuW_Cjibee-xv2a81LQPFd04sYULVA8", authDomain: "kasir-nosa.firebaseapp.com",
+      databaseURL: "https://kasir-nosa-default-rtdb.firebaseio.com", projectId: "kasir-nosa",
+      storageBucket: "kasir-nosa.firebasestorage.app", messagingSenderId: "512291099629", appId: "1:512291099629:web:4f4e8687bf4f236fa44da4"
     };
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
-    let databaseMenu = [];
-    let keranjang = [];
-    let totalSemua = 0;
-    let historyDataMentah = {};
-    let dataHutangMentah = {}; 
+    let dataMenuMentah = {}; let keranjang = []; let totalSemua = 0; let historyDataMentah = {}; let dataHutangMentah = {}; 
 
-    async function mintaPIN() {
-        const { value: pin } = await Swal.fire({
-            title: 'Akses Terkunci', text: 'Masukkan PIN Admin:', input: 'password', showCancelButton: true, confirmButtonColor: '#dc3545', confirmButtonText: 'Buka Kunci'
-        });
-        if (pin === PIN_ADMIN) return true;
+    async function mintaPIN_Log() {
+        const { value: pin } = await Swal.fire({ title: 'Akses Keamanan', text: 'Masukkan PIN untuk membuka Log:', input: 'password', showCancelButton: true, confirmButtonColor: '#8e44ad', confirmButtonText: 'Buka Kunci' });
+        if (pin === PIN_LOG) return true;
         if (pin) Swal.fire('Akses Ditolak', 'PIN Salah!', 'error');
         return false;
     }
@@ -205,8 +153,7 @@
     async function initKasir() {
         if (!namaKasirAktif) {
             const { value: nama } = await Swal.fire({ title: 'Selamat Datang!', text: 'Silakan masukkan nama kasir:', input: 'text', allowOutsideClick: false, allowEscapeKey: false, confirmButtonText: 'Mulai Jualan 🚀' });
-            namaKasirAktif = nama || "Kasir Anonim";
-            localStorage.setItem("namaKasirBengkel", namaKasirAktif);
+            namaKasirAktif = nama || "Kasir Anonim"; localStorage.setItem("namaKasirBengkel", namaKasirAktif);
         }
         document.getElementById("namaKasirTampil").innerText = namaKasirAktif;
     }
@@ -227,35 +174,39 @@
     }
 
     async function catatPengeluaran() {
-        const { value: keterangan } = await Swal.fire({
-            title: 'Catat Pengeluaran', input: 'text', inputPlaceholder: 'Cth: Beli es batu, air galon, sapu...', showCancelButton: true
-        });
+        const { value: keterangan } = await Swal.fire({ title: 'Catat Pengeluaran', input: 'text', inputPlaceholder: 'Cth: Beli es batu, galon, dll...', showCancelButton: true });
         if (!keterangan) return;
-
-        const { value: nominalStr } = await Swal.fire({
-            title: 'Nominal Pengeluaran', input: 'number', inputPlaceholder: 'Berapa Rp uang yang terpakai?', showCancelButton: true
-        });
+        const { value: nominalStr } = await Swal.fire({ title: 'Nominal Pengeluaran', text: `Harga untuk: ${keterangan}`, input: 'number', inputPlaceholder: 'Berapa uang yang terpakai?', showCancelButton: true, confirmButtonText: 'Simpan' });
         if (!nominalStr) return;
-
         let nominal = parseInt(nominalStr);
         if (isNaN(nominal) || nominal <= 0) return Swal.fire('Gagal', 'Nominal tidak valid!', 'error');
 
-        const res = await Swal.fire({
-            title: 'Kurangi Uang Kasir?', text: `Uang di laci akan dikurangi Rp ${nominal.toLocaleString('id-ID')} untuk: ${keterangan}.`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, Catat'
-        });
-
+        const res = await Swal.fire({ title: 'Kurangi Uang Kasir?', text: `Uang laci akan dikurangi Rp ${nominal.toLocaleString('id-ID')} untuk: ${keterangan}.`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, Catat' });
         if (res.isConfirmed) {
             let namaBarangTeks = `[PENGELUARAN] ${keterangan}`;
             db.ref('bengkel/history').push({ waktu: new Date().toLocaleTimeString('id-ID'), barang: namaBarangTeks, total: nominal, bayar: nominal, kembali: 0, jenis: 'pengeluaran' });
             db.ref('bengkel/pendapatan').transaction(t => (t || 0) - nominal);
-            
             catatLogAktivitas("PENGELUARAN", `Uang keluar Rp ${nominal.toLocaleString('id-ID')} untuk ${keterangan}`);
             Swal.fire('Berhasil', 'Pengeluaran dicatat dan uang kasir berkurang.', 'success');
         }
     }
 
+    async function toggleLogAktivitas() {
+        let cardLog = document.getElementById("cardLogAktivitas");
+        if (cardLog.style.display === "none") {
+            if (await mintaPIN_Log()) { 
+                cardLog.style.display = "block";
+                Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Log Keamanan Terbuka', showConfirmButton: false, timer: 1500});
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            }
+        } else {
+            cardLog.style.display = "none";
+            Swal.fire({toast: true, position: 'top-end', icon: 'info', title: 'Log Disembunyikan', showConfirmButton: false, timer: 1500});
+        }
+    }
+
     async function bersihkanLogAktivitas() {
-        if (!(await mintaPIN())) return; 
+        if (!(await mintaPIN_Log())) return; 
         const res = await Swal.fire({ title: 'Bersihkan Log?', text: "Semua catatan keamanan akan dihapus. Lanjutkan?", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33' });
         if (res.isConfirmed) { db.ref('bengkel/log_aktivitas').remove(); Swal.fire('Bersih!', 'Log aktivitas telah dikosongkan.', 'success'); }
     }
@@ -269,30 +220,37 @@
     });
     
     db.ref('bengkel/pendapatan').on('value', (s) => { document.getElementById('teksPendapatan').innerText = (s.val() || 0).toLocaleString('id-ID'); });
-    db.ref('bengkel/menu').on('value', (s) => { databaseMenu = s.val() || []; renderGroupedMenu(); });
+    
+    db.ref('bengkel/menu').on('value', (s) => { 
+        dataMenuMentah = s.val() || {}; 
+        renderGroupedMenu(); 
+    });
 
     db.ref('bengkel/hutang').on('value', (s) => { dataHutangMentah = s.val() || {}; renderBukuHutang(); });
 
     function renderBukuHutang() {
-        const container = document.getElementById('containerHutang');
-        const filterText = document.getElementById('cariDaftarHutang').value.toLowerCase();
-        container.innerHTML = '';
+        const container = document.getElementById('containerHutang'); const filterText = document.getElementById('cariDaftarHutang').value.toLowerCase(); container.innerHTML = '';
         if(Object.keys(dataHutangMentah).length === 0) return container.innerHTML = '<p style="text-align:center; color:#888; font-size:13px; font-weight:bold;">TIDAK ADA HUTANG AKTIF 🥳</p>';
 
         let adaHasil = false;
         Object.keys(dataHutangMentah).reverse().forEach(key => {
-            const h = dataHutangMentah[key]; const safeNama = h.nama.replace(/'/g, "\\'"); 
+            const h = dataHutangMentah[key]; 
+            if(!h || !h.nama) return; // PELINDUNG ERROR
+
+            const safeNama = h.nama.replace(/'/g, "\\'"); 
+            let hTot = parseInt(h.total) || 0;
+
             if (h.nama.toLowerCase().includes(filterText)) {
                 adaHasil = true;
                 container.innerHTML += `
                     <div class="hutang-box">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;"><span style="font-size:16px; font-weight:900; color:#c0392b;">👤 ${h.nama}</span><span style="font-size:11px; color:#888;">${h.waktu}</span></div>
-                        <div style="font-size:13px; color:#555; margin-bottom:8px; line-height:1.4;">${h.barang}</div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;"><span style="font-size:12px; color:#555;">Sisa Hutang:</span><span style="font-size:18px; font-weight:900; color:#155724;">Rp ${h.total.toLocaleString('id-ID')}</span></div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;"><span style="font-size:16px; font-weight:900; color:#c0392b;">👤 ${h.nama}</span><span style="font-size:11px; color:#888;">${h.waktu || ''}</span></div>
+                        <div style="font-size:13px; color:#555; margin-bottom:8px; line-height:1.4;">${h.barang || ''}</div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;"><span style="font-size:12px; color:#555;">Sisa Hutang:</span><span style="font-size:18px; font-weight:900; color:#155724;">Rp ${hTot.toLocaleString('id-ID')}</span></div>
                         <div style="display:flex; gap:6px;">
-                            <button style="flex:2; background:#28a745; color:white; border:none; padding:8px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:12px;" onclick="lunasiHutang('${key}', '${safeNama}', ${h.total})">💰 Lunas</button>
-                            <button style="flex:2; background:#17a2b8; color:white; border:none; padding:8px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:12px;" onclick="cicilHutang('${key}', '${safeNama}', ${h.total})">💳 Cicil</button>
-                            <button style="flex:1; background:#f0f2f5; color:#dc3545; border:none; padding:8px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:11px;" onclick="hapusHutangBatal('${key}', '${safeNama}', ${h.total})">🔒 Batal</button>
+                            <button style="flex:2; background:#28a745; color:white; border:none; padding:8px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:12px;" onclick="lunasiHutang('${key}', '${safeNama}', ${hTot})">💰 Lunas</button>
+                            <button style="flex:2; background:#17a2b8; color:white; border:none; padding:8px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:12px;" onclick="cicilHutang('${key}', '${safeNama}', ${hTot})">💳 Cicil</button>
+                            <button style="flex:1; background:#f0f2f5; color:#dc3545; border:none; padding:8px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:11px;" onclick="hapusHutangBatal('${key}', '${safeNama}', ${hTot})">✖ Batal</button>
                         </div>
                     </div>`;
             }
@@ -305,22 +263,25 @@
         const container = document.getElementById('containerHistory'); const containerRekap = document.getElementById('containerRekap');
         container.innerHTML = ''; containerRekap.innerHTML = '';
         
-        if(!data) {
+        if(Object.keys(historyDataMentah).length === 0) {
             container.innerHTML = '<p style="text-align:center; color:#ccc;">Kosong.</p>';
             containerRekap.innerHTML = '<p style="text-align:center; color:#ccc; font-size: 12px;">Belum ada penjualan.</p>';
-            document.getElementById('rekapTotalDuit').innerHTML = "Rp 0";
-            return;
+            document.getElementById('rekapTotalDuit').innerHTML = "Rp 0"; return;
         }
         
         let rekapTerjual = {}; let totalDuitTunai = 0; let totalDuitCashless = 0; let totalPengeluaran = 0;
 
-        Object.keys(data).reverse().forEach(key => {
-            const h = data[key]; const safeKey = key.replace(/[^a-zA-Z0-9]/g, ''); const rawKey = key;
-            let jenisTransaksi = h.jenis || 'lunas';
-            
-            if (jenisTransaksi === 'lunas') totalDuitTunai += h.total;
-            else if (jenisTransaksi === 'cashless') totalDuitCashless += h.total;
-            else if (jenisTransaksi === 'pengeluaran') totalPengeluaran += h.total;
+        Object.keys(historyDataMentah).reverse().forEach(key => {
+            const h = historyDataMentah[key]; 
+            // PELINDUNG ANTI CRASH (Melewati data yang rusak)
+            if(!h || typeof h.barang === 'undefined') return;
+
+            const safeKey = key.replace(/[^a-zA-Z0-9]/g, ''); const rawKey = key; let jenisTransaksi = h.jenis || 'lunas';
+            let hTot = parseInt(h.total) || 0;
+            let hBayar = parseInt(h.bayar) || 0;
+            let hKembali = parseInt(h.kembali) || 0;
+
+            if (jenisTransaksi === 'lunas') totalDuitTunai += hTot; else if (jenisTransaksi === 'cashless') totalDuitCashless += hTot; else if (jenisTransaksi === 'pengeluaran') totalPengeluaran += hTot;
             
             let labelTipe = ""; let bgColor = "#28a745"; 
             if(jenisTransaksi === 'cashless') { labelTipe = " <span style='color:#17a2b8; font-size:10px;'>(CASHLESS)</span>"; bgColor = "#17a2b8"; }
@@ -329,132 +290,105 @@
             else if(jenisTransaksi === 'pengeluaran') { labelTipe = " <span style='color:#dc3545; font-size:10px;'>(PENGELUARAN)</span>"; bgColor = "#dc3545"; }
 
             if(h.barang.includes("[PELUNASAN HUTANG:") || h.barang.includes("[CICILAN HUTANG:")) { bgColor = "#8e44ad"; labelTipe += " <span style='color:#8e44ad; font-size:10px;'>(BAYAR HUTANG)</span>"; }
-
             let minusSign = (jenisTransaksi === 'pengeluaran') ? "- Rp " : "Rp ";
 
             container.innerHTML += `
                 <div class="history-item" style="border-left: 6px solid ${bgColor}">
                     <div class="history-header" onclick="toggleDetails('${safeKey}')">
-                        <span class="header-time">${h.waktu}${labelTipe}</span>
-                        <span class="header-total" style="color:${jenisTransaksi==='pengeluaran'?'#dc3545':'#28a745'}">${minusSign}${h.total.toLocaleString('id-ID')}</span>
+                        <span class="header-time">${h.waktu || ''}${labelTipe}</span>
+                        <span class="header-total" style="color:${jenisTransaksi==='pengeluaran'?'#dc3545':'#28a745'}">${minusSign}${hTot.toLocaleString('id-ID')}</span>
                         <span class="header-arrow" id="arrow-${safeKey}">▼</span>
                     </div>
                     <div class="history-details" id="details-${safeKey}">
                         <div class="history-goods">${h.barang}</div>
-                        <div class="history-grid">
-                            <div class="grid-box"><span class="grid-label">NILAI</span><span class="grid-value" style="color:#1a73e8">${minusSign}${h.bayar.toLocaleString('id-ID')}</span></div>
-                            <div class="grid-box"><span class="grid-label">KEMBALI</span><span class="grid-value" style="color:#004085">Rp ${h.kembali.toLocaleString('id-ID')}</span></div>
-                        </div>
-                        <button class="btn-hapus-transaksi" onclick="hapusTransaksi('${rawKey}', ${h.total}, '${jenisTransaksi}')">🔒 Batal & Hapus Riwayat Ini</button>
+                        <div class="history-grid"><div class="grid-box"><span class="grid-label">NILAI</span><span class="grid-value" style="color:#1a73e8">${minusSign}${hBayar.toLocaleString('id-ID')}</span></div><div class="grid-box"><span class="grid-label">KEMBALI</span><span class="grid-value" style="color:#004085">Rp ${hKembali.toLocaleString('id-ID')}</span></div></div>
+                        <button class="btn-hapus-transaksi" onclick="hapusTransaksi('${rawKey}', ${hTot}, '${jenisTransaksi}')">✖ Batal & Hapus Riwayat Ini</button>
                     </div>
                 </div>`;
                 
-            if(jenisTransaksi !== 'pengeluaran') {
+            if(jenisTransaksi !== 'pengeluaran' && jenisTransaksi !== 'hutang' && jenisTransaksi !== 'konsumsi' && !h.barang.includes("[BAYAR HUTANG]") && !h.barang.includes("[KELUAR]")) {
                 let itemArray = h.barang.split(', ');
-                itemArray.forEach(item => {
-                    let cocok = item.match(/(.*?)\s\((\d+)\)/);
-                    if (cocok) { let namaBarang = cocok[1]; let qtyBarang = parseInt(cocok[2]); rekapTerjual[namaBarang] = (rekapTerjual[namaBarang] || 0) + qtyBarang; }
-                });
+                itemArray.forEach(item => { let cocok = item.match(/(.*?)\s\((\d+)\)/); if (cocok) { let namaBarang = cocok[1]; let qtyBarang = parseInt(cocok[2]); rekapTerjual[namaBarang] = (rekapTerjual[namaBarang] || 0) + qtyBarang; } });
             }
         });
 
         let totalSemuaPendapatan = totalDuitTunai + totalDuitCashless - totalPengeluaran;
         document.getElementById('rekapTotalDuit').innerHTML = `Rp ${totalSemuaPendapatan.toLocaleString('id-ID')}<br><span style="font-size: 13px; color: #555; display: block; margin-top: 5px;">( 💵 Tunai: Rp ${totalDuitTunai.toLocaleString('id-ID')} | 💳 Cash: Rp ${totalDuitCashless.toLocaleString('id-ID')} | 💸 Keluar: Rp ${totalPengeluaran.toLocaleString('id-ID')} )</span>`;
 
-        let rekapHTML = "";
-        for (let barang in rekapTerjual) { rekapHTML += `<div class="rekap-item"><span>${barang}</span><span class="rekap-qty">${rekapTerjual[barang]}</span></div>`; }
-        if(rekapHTML === "") rekapHTML = '<p style="text-align:center; color:#ccc; font-size: 12px;">Belum ada penjualan.</p>';
-        containerRekap.innerHTML = rekapHTML;
+        let rekapHTML = ""; for (let barang in rekapTerjual) { rekapHTML += `<div class="rekap-item"><span>${barang}</span><span class="rekap-qty">${rekapTerjual[barang]}</span></div>`; }
+        if(rekapHTML === "") rekapHTML = '<p style="text-align:center; color:#ccc; font-size: 12px;">Belum ada penjualan.</p>'; containerRekap.innerHTML = rekapHTML;
     });
 
-    function toggleDetails(id) {
-        const d = document.getElementById('details-' + id); const a = document.getElementById('arrow-' + id);
-        if (d.style.display === "block") { d.style.display = "none"; a.innerHTML = "▼"; } else { d.style.display = "block"; a.innerHTML = "▲"; }
-    }
+    function toggleDetails(id) { const d = document.getElementById('details-' + id); const a = document.getElementById('arrow-' + id); if (d.style.display === "block") { d.style.display = "none"; a.innerHTML = "▼"; } else { d.style.display = "block"; a.innerHTML = "▲"; } }
 
     async function lunasiHutang(key, nama, total) {
         const { value: metode } = await Swal.fire({ title: `Pelunasan ${nama}`, text: `Terima lunas Rp ${total.toLocaleString('id-ID')}?`, input: 'select', inputOptions: { 'Tunai': 'Uang Tunai', 'Cashless': 'Cashless (QRIS/Transfer)' }, showCancelButton: true, confirmButtonText: 'Terima Lunas' });
         if(!metode) return;
         let jenis = metode === 'Tunai' ? 'lunas' : 'cashless';
         let namaBarangTeks = jenis === 'cashless' ? `[PELUNASAN HUTANG: ${nama}] [CASHLESS]` : `[PELUNASAN HUTANG: ${nama}]`;
-
         db.ref('bengkel/history').push({ waktu: new Date().toLocaleTimeString('id-ID'), barang: namaBarangTeks, total: total, bayar: total, kembali: 0, jenis: jenis });
         db.ref('bengkel/pendapatan').transaction(t => (t || 0) + total);
         db.ref('bengkel/hutang/' + key).remove();
         catatLogAktivitas("HUTANG LUNAS", `Menerima pelunasan hutang dari ${nama} sebesar Rp ${total.toLocaleString('id-ID')} via ${metode}`);
-        document.getElementById('cariDaftarHutang').value = ""; 
-        Swal.fire('Berhasil!', `Hutang ${nama} sudah lunas.`, 'success');
+        document.getElementById('cariDaftarHutang').value = ""; Swal.fire('Berhasil!', `Hutang ${nama} sudah lunas.`, 'success');
     }
 
     async function cicilHutang(key, nama, totalSaatIni) {
         const { value: nominalStr } = await Swal.fire({ title: `Cicilan ${nama}`, text: `Sisa hutang: Rp ${totalSaatIni.toLocaleString('id-ID')}`, input: 'number', showCancelButton: true, confirmButtonText: 'Lanjut' });
         if (!nominalStr) return;
-        let nominalCicil = parseInt(nominalStr);
-        if (nominalCicil <= 0 || isNaN(nominalCicil) || nominalCicil > totalSaatIni) return Swal.fire("Gagal", "Nominal cicilan tidak valid!", "error");
-
+        let nominalCicil = parseInt(nominalStr); if (nominalCicil <= 0 || isNaN(nominalCicil) || nominalCicil > totalSaatIni) return Swal.fire("Gagal", "Nominal cicilan tidak valid!", "error");
         const { value: metode } = await Swal.fire({ title: 'Metode Pembayaran', input: 'select', inputOptions: { 'Tunai': 'Uang Tunai', 'Cashless': 'Cashless (QRIS/Transfer)' }, showCancelButton: true, confirmButtonText: 'Simpan Cicilan' });
         if (!metode) return;
-        let jenis = metode === 'Tunai' ? 'lunas' : 'cashless';
-        let namaBarangTeks = jenis === 'cashless' ? `[CICILAN HUTANG: ${nama}] [CASHLESS]` : `[CICILAN HUTANG: ${nama}]`;
-
+        let jenis = metode === 'Tunai' ? 'lunas' : 'cashless'; let namaBarangTeks = jenis === 'cashless' ? `[CICILAN HUTANG: ${nama}] [CASHLESS]` : `[CICILAN HUTANG: ${nama}]`;
         db.ref('bengkel/history').push({ waktu: new Date().toLocaleTimeString('id-ID'), barang: namaBarangTeks, total: nominalCicil, bayar: nominalCicil, kembali: 0, jenis: jenis });
         db.ref('bengkel/pendapatan').transaction(t => (t || 0) + nominalCicil);
 
         let sisaHutangBaru = totalSaatIni - nominalCicil;
         if (sisaHutangBaru === 0) {
-            db.ref('bengkel/hutang/' + key).remove(); 
-            catatLogAktivitas("CICIL LUNAS", `Menerima cicilan akhir (Lunas) dari ${nama} Rp ${nominalCicil.toLocaleString('id-ID')}`);
-            Swal.fire('Lunas!', `Hutang ${nama} otomatis lunas karena sisa Rp 0.`, 'success');
+            db.ref('bengkel/hutang/' + key).remove(); catatLogAktivitas("CICIL LUNAS", `Menerima cicilan akhir (Lunas) dari ${nama} Rp ${nominalCicil.toLocaleString('id-ID')}`); Swal.fire('Lunas!', `Hutang ${nama} otomatis lunas karena sisa Rp 0.`, 'success');
         } else {
-            db.ref('bengkel/hutang/' + key).update({ total: sisaHutangBaru });
-            catatLogAktivitas("CICIL HUTANG", `Menerima cicilan dari ${nama} Rp ${nominalCicil.toLocaleString('id-ID')}`);
-            Swal.fire('Berhasil!', `Cicilan dicatat. Sisa hutang: Rp ${sisaHutangBaru.toLocaleString('id-ID')}`, 'success');
+            db.ref('bengkel/hutang/' + key).update({ total: sisaHutangBaru }); catatLogAktivitas("CICIL HUTANG", `Menerima cicilan dari ${nama} Rp ${nominalCicil.toLocaleString('id-ID')}`); Swal.fire('Berhasil!', `Cicilan dicatat. Sisa hutang: Rp ${sisaHutangBaru.toLocaleString('id-ID')}`, 'success');
         }
         document.getElementById('cariDaftarHutang').value = ""; 
     }
 
     async function hapusHutangBatal(key, nama, total) {
-        if (!(await mintaPIN())) return; 
         const res = await Swal.fire({ title: 'Hapus Hutang?', text: "Data ini dihapus tanpa dibayar. Yakin?", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Ya, Hapus Saja' });
         if(res.isConfirmed) {
-            db.ref('bengkel/hutang/' + key).remove();
-            catatLogAktivitas("HAPUS HUTANG", `Menghapus hutang ${nama} (Rp ${total.toLocaleString('id-ID')}) tanpa dibayar.`);
-            document.getElementById('cariDaftarHutang').value = ""; 
-            Swal.fire('Dihapus!', 'Data hutang telah dibatalkan.', 'success');
+            db.ref('bengkel/hutang/' + key).remove(); catatLogAktivitas("HAPUS HUTANG", `Menghapus hutang ${nama} (Rp ${total.toLocaleString('id-ID')}) tanpa dibayar.`);
+            document.getElementById('cariDaftarHutang').value = ""; Swal.fire('Dihapus!', 'Data hutang telah dibatalkan.', 'success');
         }
     }
 
     async function hapusTransaksi(key, total, jenis) {
-        if (!(await mintaPIN())) return; 
         const res = await Swal.fire({ title: 'Batalkan Riwayat?', text: "Riwayat yang dihapus tidak bisa dikembalikan!", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Ya, Batalkan' });
         if (!res.isConfirmed) return;
-
         db.ref('bengkel/history/' + key).remove();
-        
-        // Logika Tarik Ulur Uang
-        if (jenis === 'lunas' || jenis === 'cashless') {
-            db.ref('bengkel/pendapatan').transaction(t => { let sisaUang = (t || 0) - total; return sisaUang < 0 ? 0 : sisaUang; });
-        } else if (jenis === 'pengeluaran') {
-            db.ref('bengkel/pendapatan').transaction(t => (t || 0) + total); // Uang kembali karena pengeluaran dibatalkan
-        }
-        
+        if (jenis === 'lunas' || jenis === 'cashless') { db.ref('bengkel/pendapatan').transaction(t => { let sisaUang = (t || 0) - total; return sisaUang < 0 ? 0 : sisaUang; }); } 
+        else if (jenis === 'pengeluaran') { db.ref('bengkel/pendapatan').transaction(t => (t || 0) + total); }
         catatLogAktivitas("HAPUS RIWAYAT", `Menghapus riwayat transaksi senilai Rp ${total.toLocaleString('id-ID')} (${jenis})`);
         Swal.fire('Dihapus!', 'Riwayat berhasil dibatalkan.', 'success');
     }
 
     function renderGroupedMenu(filterText = "") {
         const container = document.getElementById('containerMenu'); container.innerHTML = '';
-        const kats = ["Makanan", "Minuman", "Rokok", "Paket"];
-        const cls = {"Makanan":"kat-makanan", "Minuman":"kat-minuman", "Rokok":"kat-rokok", "Paket":"kat-paket"};
+        const kats = ["Makanan", "Minuman", "Rokok", "Paket", "Lainnya"]; const cls = {"Makanan":"kat-makanan", "Minuman":"kat-minuman", "Rokok":"kat-rokok", "Paket":"kat-paket", "Lainnya":"kat-paket"};
+        
         kats.forEach(kat => {
-            const items = databaseMenu.filter(m => m.kategori === kat && m.nama.toLowerCase().includes(filterText.toLowerCase()));
+            let items = [];
+            Object.keys(dataMenuMentah).forEach(key => {
+                let m = dataMenuMentah[key];
+                if(m && m.kategori === kat && m.nama && m.nama.toLowerCase().includes(filterText.toLowerCase())) {
+                    items.push({ key: key, ...m });
+                }
+            });
+
             if (items.length > 0) {
                 let h = `<div class="judul-kategori ${cls[kat]}">${kat}</div><table>`;
                 items.forEach(item => {
-                    const idx = databaseMenu.indexOf(item); const itemInK = keranjang.find(k => k.kode === item.kode); const q = itemInK ? itemInK.qty : 0;
-                    h += `<tr><td><strong>${item.nama}</strong><br><span class="btn-aksi-menu" onclick="editMenu(${idx})">Edit</span> | <span class="btn-hapus-menu" onclick="hapusMenu(${idx})">🔒 Hapus</span></td>
-                        <td style="font-weight:bold">${item.harga.toLocaleString('id-ID')}</td>
-                        <td style="text-align:right"><div class="qty-control"><button class="btn-minus" onclick="ubahQty(${idx}, -1)">-</button><span class="qty-num">${q}</span><button class="btn-plus" onclick="ubahQty(${idx}, 1)">+</button></div></td></tr>`;
+                    const itemInK = keranjang.find(k => k.key === item.key); const q = itemInK ? itemInK.qty : 0;
+                    h += `<tr><td><strong>${item.nama}</strong><br><span class="btn-aksi-menu" onclick="editMenu('${item.key}')">Edit</span> | <span class="btn-hapus-menu" onclick="hapusMenu('${item.key}', '${item.nama.replace(/'/g, "\\'")}')">✖ Hapus</span></td>
+                        <td style="font-weight:bold">${item.harga.toLocaleString('id-ID')}</td><td style="text-align:right"><div class="qty-control"><button class="btn-minus" onclick="ubahQty('${item.key}', -1)">-</button><span class="qty-num">${q}</span><button class="btn-plus" onclick="ubahQty('${item.key}', 1)">+</button></div></td></tr>`;
                 });
                 h += `</table>`; container.innerHTML += h;
             }
@@ -462,17 +396,17 @@
     }
 
     function filterTampilanMenu() { renderGroupedMenu(document.getElementById('cariDaftarMenu').value); }
-
-    function ubahQty(idxM, delta) {
-        const it = databaseMenu[idxM]; const idxK = keranjang.findIndex(k => k.kode === it.kode);
+    
+    function ubahQty(key, delta) {
+        const it = dataMenuMentah[key]; if(!it) return;
+        const idxK = keranjang.findIndex(k => k.key === key);
         if (idxK !== -1) { keranjang[idxK].qty += delta; if (keranjang[idxK].qty <= 0) keranjang.splice(idxK, 1); else keranjang[idxK].subtotal = keranjang[idxK].qty * keranjang[idxK].harga; } 
-        else if (delta > 0) { keranjang.push({ kode: it.kode, nama: it.nama, harga: it.harga, qty: 1, subtotal: it.harga }); }
+        else if (delta > 0) { keranjang.push({ key: key, nama: it.nama, harga: it.harga, qty: 1, subtotal: it.harga }); }
         renderStruk(); renderGroupedMenu(document.getElementById('cariDaftarMenu').value);
     }
     
     function ubahQtyDariStruk(indexK, delta) {
-        keranjang[indexK].qty += delta;
-        if (keranjang[indexK].qty <= 0) { keranjang.splice(indexK, 1); } else { keranjang[indexK].subtotal = keranjang[indexK].qty * keranjang[indexK].harga; }
+        keranjang[indexK].qty += delta; if (keranjang[indexK].qty <= 0) { keranjang.splice(indexK, 1); } else { keranjang[indexK].subtotal = keranjang[indexK].qty * keranjang[indexK].harga; }
         renderStruk(); renderGroupedMenu(document.getElementById('cariDaftarMenu').value);
     }
 
@@ -489,7 +423,6 @@
 
     function formatInputUangBeli(el) { let v = el.value.replace(/[^0-9]/g, ''); el.value = v ? parseInt(v).toLocaleString('id-ID') : ''; hitungKembalian(); }
     function formatInputUang(el) { let v = el.value.replace(/[^0-9]/g, ''); el.value = v ? parseInt(v).toLocaleString('id-ID') : ''; }
-
     function hitungKembalian() {
         const u = parseInt(document.getElementById('inputUang').value.replace(/[^0-9]/g, '')) || 0; const k = u - totalSemua; const t = document.getElementById('teksKembalian');
         if (u === 0 || totalSemua === 0) t.innerText = "Rp 0"; else t.innerText = k < 0 ? "Kurang!" : "Rp " + k.toLocaleString('id-ID');
@@ -497,30 +430,23 @@
 
     async function selesaikanTransaksi(jenis) {
         if (keranjang.length === 0) return Swal.fire("Oops!", "Keranjang belanja kosong!", "warning");
-        
         let u = parseInt(document.getElementById('inputUang').value.replace(/[^0-9]/g, '')) || 0; let b = keranjang.map(p => `${p.nama} (${p.qty})`).join(", ");
         let kembali = 0; let tambahKeLaci = 0;
 
         if (jenis === 'lunas') {
             if (u < totalSemua) return Swal.fire("Oops!", "Uang tunai pelanggan kurang!", "warning");
             kembali = u - totalSemua; tambahKeLaci = totalSemua;
-        } 
-        else if (jenis === 'cashless') {
-            const { value: metode } = await Swal.fire({ title: 'Metode Cashless', input: 'text', inputPlaceholder: 'Cth: QRIS, DANA, Transfer...', showCancelButton: true });
-            if (!metode) return; 
-            b = b + ` [CASHLESS: ${metode}]`; u = totalSemua; kembali = 0; tambahKeLaci = totalSemua; 
-        }
-        else if (jenis === 'hutang') {
+        } else if (jenis === 'cashless') {
+            const { value: metode } = await Swal.fire({ title: 'Metode Cashless', input: 'select', inputOptions: {'QRIS':'QRIS', 'DANA':'DANA', 'BRImo':'BRImo', 'Transfer Bank':'Transfer Bank'}, showCancelButton: true });
+            if (!metode) return; b = b + ` [CASHLESS: ${metode}]`; u = totalSemua; kembali = 0; tambahKeLaci = totalSemua; 
+        } else if (jenis === 'hutang') {
             const { value: nama } = await Swal.fire({ title: 'Catat Hutang', input: 'text', inputPlaceholder: 'Siapa yang berhutang?', showCancelButton: true });
-            if (!nama) return; 
-            b = b + ` [HUTANG: ${nama}]`; u = 0; kembali = 0; tambahKeLaci = 0; 
+            if (!nama) return; b = b + ` [HUTANG: ${nama}]`; u = 0; kembali = 0; tambahKeLaci = 0; 
             db.ref('bengkel/hutang').push({ nama: nama, waktu: new Date().toLocaleDateString('id-ID') + " " + new Date().toLocaleTimeString('id-ID'), barang: b, total: totalSemua });
             catatLogAktivitas("MEMBERI HUTANG", `Mencatat hutang atas nama ${nama} sebesar Rp ${totalSemua.toLocaleString('id-ID')}`);
-        } 
-        else if (jenis === 'konsumsi') {
+        } else if (jenis === 'konsumsi') {
             const res = await Swal.fire({ title: 'Pakai Sendiri?', text: "Catat sebagai barang dipakai/dimakan sendiri?", icon: 'question', showCancelButton: true });
-            if (!res.isConfirmed) return;
-            b = b + ` [PAKAI SENDIRI]`; u = 0; kembali = 0; tambahKeLaci = 0; 
+            if (!res.isConfirmed) return; b = b + ` [PAKAI SENDIRI]`; u = 0; kembali = 0; tambahKeLaci = 0; 
             catatLogAktivitas("KONSUMSI", `Mencatat pemakaian barang untuk konsumsi senilai Rp ${totalSemua.toLocaleString('id-ID')}`);
         }
 
@@ -541,17 +467,20 @@
         let totalPendapatanTunai = 0; let totalPendapatanCashless = 0; let totalPengeluaran = 0; let rekapItem = {};
 
         Object.keys(historyDataMentah).forEach(key => {
-            const data = historyDataMentah[key]; let jenis = data.jenis || 'lunas';
-            if (jenis === 'lunas') totalPendapatanTunai += data.total;
-            else if (jenis === 'cashless') totalPendapatanCashless += data.total;
-            else if (jenis === 'pengeluaran') totalPengeluaran += data.total;
+            const data = historyDataMentah[key]; 
+            // PROTEKSI ERROR DOWNLOAD
+            if(!data || typeof data.barang === 'undefined') return;
+
+            let jenis = data.jenis || 'lunas';
+            let dTot = parseInt(data.total) || 0;
+
+            if (jenis === 'lunas') totalPendapatanTunai += dTot; 
+            else if (jenis === 'cashless') totalPendapatanCashless += dTot; 
+            else if (jenis === 'pengeluaran') totalPengeluaran += dTot;
             
-            if(jenis !== 'pengeluaran'){
+            if(jenis !== 'pengeluaran' && jenis !== 'hutang' && jenis !== 'konsumsi' && !data.barang.includes("[BAYAR HUTANG]") && !data.barang.includes("[KELUAR]")){
                 let itemArray = data.barang.split(', ');
-                itemArray.forEach(item => {
-                    let cocok = item.match(/(.*?)\s\((\d+)\)/);
-                    if (cocok) { let nama = cocok[1]; let qty = parseInt(cocok[2]); rekapItem[nama] = (rekapItem[nama] || 0) + qty; }
-                });
+                itemArray.forEach(item => { let cocok = item.match(/(.*?)\s\((\d+)\)/); if (cocok) { let nama = cocok[1]; let qty = parseInt(cocok[2]); rekapItem[nama] = (rekapItem[nama] || 0) + qty; } });
             }
         });
 
@@ -560,7 +489,13 @@
         htmlContent += `</table><div class="judul-seksi">📝 RINCIAN TRANSAKSI HARIAN</div><table><tr><th>Waktu</th><th>Rincian</th><th>Nilai</th></tr>`;
 
         Object.keys(historyDataMentah).forEach(key => {
-            const d = historyDataMentah[key]; let badge = "";
+            const d = historyDataMentah[key]; 
+            // PROTEKSI ERROR DOWNLOAD
+            if(!d || typeof d.barang === 'undefined') return;
+
+            let badge = "";
+            let dTot = parseInt(d.total) || 0;
+
             if(d.jenis === 'hutang') badge = "<br><span style='color:red; font-size:10px;'>[BELUM DIBAYAR]</span>";
             else if(d.jenis === 'konsumsi') badge = "<br><span style='color:gray; font-size:10px;'>[PAKAI SENDIRI]</span>";
             else if(d.jenis === 'cashless') badge = "<br><span style='color:#17a2b8; font-size:10px;'>[CASHLESS]</span>";
@@ -570,15 +505,14 @@
             if(d.barang.includes("[PELUNASAN HUTANG:") || d.barang.includes("[CICILAN HUTANG:")) { badge += " <span style='color:#8e44ad; font-size:10px;'>[BAYAR HUTANG]</span>"; }
             
             let minusSign = (d.jenis === 'pengeluaran') ? "- Rp " : "Rp ";
-            htmlContent += `<tr><td style="color:#888;">${d.waktu}${badge}</td><td>${d.barang}</td><td style="font-weight:bold; color:${d.jenis === 'pengeluaran' ? '#dc3545' : '#333'};">${minusSign}${d.total.toLocaleString('id-ID')}</td></tr>`;
+            htmlContent += `<tr><td style="color:#888;">${d.waktu || ''}${badge}</td><td>${d.barang}</td><td style="font-weight:bold; color:${d.jenis === 'pengeluaran' ? '#dc3545' : '#333'};">${minusSign}${dTot.toLocaleString('id-ID')}</td></tr>`;
         });
 
         let totalBersih = totalPendapatanTunai + totalPendapatanCashless - totalPengeluaran;
-        htmlContent += `</table><div class="total-box"><span style="font-size:12px; display:block; color:#666;">PENDAPATAN BERSIH HARI INI</span>Rp ${totalBersih.toLocaleString('id-ID')}<div style="font-size:12px; color:#555; margin-top:8px;">(💵 Tunai: Rp ${totalPendapatanTunai.toLocaleString('id-ID')} | 💳 Cash: Rp ${totalPendapatanCashless.toLocaleString('id-ID')} | 💸 Pengeluaran: Rp ${totalPengeluaran.toLocaleString('id-ID')})</div></div></div></body></html>`;
+        htmlContent += `</table><div class="total-box"><span style="font-size:12px; display:block; color:#666;">PENDAPATAN BERSIH HARI INI</span>Rp ${totalBersih.toLocaleString('id-ID')}<div style="font-size:12px; color:#555; margin-top:8px;">(💵 Tunai: Rp ${totalPendapatanTunai.toLocaleString('id-ID')} | 💳 Cash: Rp ${totalPendapatanCashless.toLocaleString('id-ID')} | 💸 Keluar: Rp ${totalPengeluaran.toLocaleString('id-ID')})</div></div></div></body></html>`;
 
         const blob = new Blob([htmlContent], { type: 'text/html' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-        a.download = `Laporan_Kasir_${new Date().toLocaleDateString('id-ID').replace(/\//g, '-')}.html`;
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        a.download = `Laporan_Kasir_${new Date().toLocaleDateString('id-ID').replace(/\//g, '-')}.html`; document.body.appendChild(a); a.click(); document.body.removeChild(a);
         Swal.fire('Terunduh!', 'Laporan berhasil disimpan ke HP.', 'success');
     }
 
@@ -586,34 +520,28 @@
         const n = document.getElementById('namaBaru').value; const k = document.getElementById('katBaru').value; const hStr = document.getElementById('hargaBaru').value;
         const h = parseInt(hStr.replace(/[^0-9]/g, ''));
         if (!n || isNaN(h)) return Swal.fire("Input Kurang", "Isi nama dan harga barang dengan benar!", "error");
-        
-        let kd = databaseMenu.length > 0 ? Math.max(...databaseMenu.map(m => m.kode)) + 1 : 1;
-        databaseMenu.push({ kode: kd, nama: n, harga: h, kategori: k }); 
-        db.ref('bengkel/menu').set(databaseMenu);
-        catatLogAktivitas("TAMBAH MENU", `Menambahkan menu: ${n} (Rp ${h})`);
-        
+        db.ref('bengkel/menu').push({ nama: n, harga: h, kategori: k }); catatLogAktivitas("TAMBAH MENU", `Menambahkan menu: ${n} (Rp ${h})`);
         document.getElementById('namaBaru').value = ''; document.getElementById('hargaBaru').value = '';
         Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Menu Ditambahkan', showConfirmButton: false, timer: 1500 });
     }
     
-    async function editMenu(i) { 
-        let namaLama = databaseMenu[i].nama;
-        const { value: n } = await Swal.fire({ title: 'Edit Nama', input: 'text', inputValue: databaseMenu[i].nama, showCancelButton: true });
+    async function editMenu(key) { 
+        let menuLama = dataMenuMentah[key]; if(!menuLama) return;
+        const { value: n } = await Swal.fire({ title: 'Edit Nama', input: 'text', inputValue: menuLama.nama, showCancelButton: true });
         if (n) { 
-            const { value: h } = await Swal.fire({ title: 'Edit Harga', input: 'number', inputValue: databaseMenu[i].harga, showCancelButton: true });
+            const { value: h } = await Swal.fire({ title: 'Edit Harga', input: 'number', inputValue: menuLama.harga, showCancelButton: true });
             if(h) {
-                databaseMenu[i].nama = n; databaseMenu[i].harga = parseInt(h); db.ref('bengkel/menu').set(databaseMenu); 
-                catatLogAktivitas("EDIT MENU", `Mengubah menu ${namaLama} menjadi ${n} (Rp ${databaseMenu[i].harga})`);
+                db.ref('bengkel/menu/' + key).update({ nama: n, harga: parseInt(h) }); 
+                catatLogAktivitas("EDIT MENU", `Mengubah menu ${menuLama.nama} menjadi ${n} (Rp ${parseInt(h)})`);
                 Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Menu Diperbarui', showConfirmButton: false, timer: 1500 });
             }
         } 
     }
     
-    async function hapusMenu(i) { 
-        if (!(await mintaPIN())) return; 
-        const res = await Swal.fire({ title: 'Hapus Menu?', text: `Hapus ${databaseMenu[i].nama} dari daftar?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33' });
+    async function hapusMenu(key, namaTerhapus) { 
+        const res = await Swal.fire({ title: 'Hapus Menu?', text: `Hapus ${namaTerhapus} dari daftar?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33' });
         if(res.isConfirmed) { 
-            let namaTerhapus = databaseMenu[i].nama; databaseMenu.splice(i, 1); db.ref('bengkel/menu').set(databaseMenu); 
+            db.ref('bengkel/menu/' + key).remove(); 
             catatLogAktivitas("HAPUS MENU", `Menghapus menu: ${namaTerhapus}`);
             Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Terhapus', showConfirmButton: false, timer: 1500 });
         } 
@@ -621,9 +549,7 @@
     
     async function resetHistorySaja() { 
         if (Object.keys(historyDataMentah).length === 0) return Swal.fire("Info", "Riwayat masih kosong!", "info");
-        if (!(await mintaPIN())) return; 
-        
-        const mauDownload = await Swal.fire({ title: 'Tutup Buku Harian', text: "Mendownload Laporan HTML hari ini terlebih dahulu?", icon: 'question', showCancelButton: true, confirmButtonText: 'Ya, Download', cancelButtonText: 'Tidak Usah' });
+        const mauDownload = await Swal.fire({ title: 'Tutup Buku Harian', text: "Download Laporan HTML hari ini terlebih dahulu?", icon: 'question', showCancelButton: true, confirmButtonText: 'Ya, Download', cancelButtonText: 'Tidak Usah' });
         if (mauDownload.isConfirmed) simpanKeMemoriHP();
         
         const yakinHapus = await Swal.fire({ title: 'PERINGATAN FINAL', text: "Riwayat harian akan dikosongkan. Lanjutkan?", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Ya, Kosongkan' });
@@ -634,7 +560,6 @@
     }
     
     async function resetUangSaja() { 
-        if (!(await mintaPIN())) return; 
         const res = await Swal.fire({ title: 'Reset Uang?', text: "Kembalikan total pendapatan di kasir jadi Rp 0?", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33' });
         if(res.isConfirmed) {
             db.ref('bengkel/pendapatan').set(0); catatLogAktivitas("RESET UANG", "Mereset jumlah uang pemasukan menjadi Rp 0");
@@ -644,4 +569,3 @@
 </script>
 </body>
 </html>
-                        
