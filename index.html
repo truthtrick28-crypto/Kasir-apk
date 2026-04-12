@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Warung Makan Nosa - Aegis Forensic Balance</title>
     
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4361ee">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1011/1011812.png">
+    
     <script>
         window.addEventListener('error', function(e) {
             if(e.target && e.target.src && e.target.src.includes('firebase')) {
@@ -283,7 +287,6 @@
     let isUI_Locked = false;
     let currentKategoriFilter = 'Semua';
 
-    // FUNGSI SUPER (GLOBAL): Format Uang Real-time & Proteksi Huruf
     window.formatUangLokal = function(el) {
         let v = el.value.replace(/[^0-9]/g, '');
         el.value = v ? parseInt(v).toLocaleString('id-ID') : '';
@@ -829,7 +832,9 @@
                     showCancelButton: true, confirmButtonColor: '#4361ee' 
                 });
                 if (kDiberikanStr === undefined) return; let kDiberikan = parseInt(kDiberikanStr.replace(/[^0-9]/g, '')) || 0;
-                if (kDiberikan >= kembalianSeharusnya) return Swal.fire("Lho", "Kembaliannya cukup, pakai tombol BAYAR TUNAI saja ya.", "info");
+                
+                if (kDiberikan > kembalianSeharusnya) return Swal.fire("Error", "Uang yang diberikan tidak boleh melebihi total kembalian yang seharusnya!", "error");
+                if (kDiberikan === kembalianSeharusnya) return Swal.fire("Lho", "Kembaliannya cukup, pakai tombol BAYAR TUNAI saja ya.", "info");
                 
                 let sisaKurang = kembalianSeharusnya - kDiberikan; 
                 const { value: opsi } = await Swal.fire({ title: `Sisa Kurang Rp ${sisaKurang.toLocaleString('id-ID')}`, text: 'Sisa uang ini mau dicatat sebagai?', input: 'select', inputOptions: { 'hutang': 'Toko Ngutang ke Pelanggan', 'ikhlas': 'Diikhlaskan (Masuk Tip/Kas)' }, showCancelButton: true, confirmButtonColor: '#4361ee' });
@@ -894,7 +899,6 @@
             let nom = parseInt(n.replace(/[^0-9]/g, ''));
             if (isNaN(nom) || nom <= 0) return Swal.fire('Error', 'Harga beli tidak valid!', 'error');
 
-            // NEW VALIDATION: Cegah Kas Keluar melebihi uang fisik laci tanpa peringatan
             if (nom > uangLaciGlobal) {
                 const conf = await Swal.fire({
                     title: 'Isi Laci Kurang!',
@@ -951,7 +955,6 @@
             let sisaKas = parseInt(sisaKasStr.replace(/[^0-9]/g, '')) || 0;
             if (sisaKas < 0) sisaKas = 0;
             
-            // VALIDASI: Sisa laci tidak boleh melebihi aktual laci
             if (sisaKas > uangLaciGlobal) {
                 return Swal.fire(
                     "Peringatan!", 
@@ -1253,7 +1256,6 @@
             if (!nStr) return; 
             let nom = parseInt(nStr.replace(/[^0-9]/g, '')); 
             
-            // VALIDASI: Nominal cicilan dicegah jika salah, kosong, atau melebihi sisa tagihan.
             if (isNaN(nom) || nom <= 0) {
                 return Swal.fire("Gagal", "Nominal cicilan tidak valid!", "error");
             }
@@ -1669,6 +1671,17 @@
             const res = await Swal.fire({ title: 'Hapus Seluruh Log?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545' });
             if (res.isConfirmed) { amanHapus('warung/log_aktivitas', 'log', ''); if(typeof Swal.fire === 'function') Swal.fire('Musnah!', 'Log bersih.', 'success'); }
         } finally { isUI_Locked = false; }
+    }
+
+    // REGISTRASI SERVICE WORKER UNTUK ANTI-DINOSAURUS (OFFLINE MODE)
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js').then(reg => {
+                console.log('Service Worker Terpasang! Web anti-dinosaurus aktif.');
+            }).catch(err => {
+                console.log('SW Gagal:', err);
+            });
+        });
     }
 </script>
 </body>
