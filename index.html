@@ -562,13 +562,15 @@
                     confirmButtonColor: '#4361ee'
                 });
 
-                try {
+                                try {
                     await firebase.auth().signInWithEmailAndPassword("kasir@nosa.com", pass);
                     Swal.fire({toast:true, position:'top-end', icon:'success', title:'Database Terbuka!', showConfirmButton:false, timer:1500});
                 } catch (error) {
-                    Swal.fire('Gagal', 'Password Salah atau Tidak Ada Sinyal!', 'error').then(() => initKasir());
+                    // MEMAKSA FIREBASE MENGELUARKAN ALASAN ERROR ASLINYA
+                    Swal.fire('Gagal Masuk', 'Alasan Firebase: ' + error.message, 'error').then(() => initKasir());
                     return; 
                 }
+
             }
 
             // Setelah sukses buka gembok, lanjut minta nama kasir
