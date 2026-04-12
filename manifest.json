@@ -1,15 +1,20 @@
 {
+  "id": "/Kasir-apk/",
   "name": "Kasir Warung Nosa",
   "short_name": "Kasir Nosa",
+  "description": "Aplikasi kasir offline tangguh untuk Warung Makan Nosa.",
   "start_url": "./index.html",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#f4f6f8",
   "theme_color": "#4361ee",
+  "categories": ["business", "finance", "productivity"],
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/1011/1011812.png",
+      "src": "./icon_apk_kasir_nosa.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
