@@ -8,7 +8,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4361ee">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1011/1011812.png">
-    
+
     <script>
         window.addEventListener('error', function(e) {
             if(e.target && e.target.src && e.target.src.includes('firebase')) {
@@ -19,6 +19,7 @@
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
@@ -287,6 +288,7 @@
     let isUI_Locked = false;
     let currentKategoriFilter = 'Semua';
 
+    // FUNGSI SUPER (GLOBAL): Format Uang Real-time & Proteksi Huruf
     window.formatUangLokal = function(el) {
         let v = el.value.replace(/[^0-9]/g, '');
         el.value = v ? parseInt(v).toLocaleString('id-ID') : '';
@@ -472,6 +474,7 @@
         if(dataHutangMentah[key]) { dataHutangMentah[key].total = totalBaru; reqRenderHutang(); saveLocalCache('hutang', dataHutangMentah); }
     }
 
+    // FITUR ANTI LACI GANDA
     function amanTambahUang(path, nilai) {
         if(isOnline && typeof firebase !== 'undefined') { 
             db.ref(path).transaction(v => (parseInt(v)||0) + nilai); 
@@ -484,6 +487,7 @@
         }
     }
 
+    // FITUR ANTI LACI GANDA
     function amanKurangUang(path, nilai) {
         if(isOnline && typeof firebase !== 'undefined') { 
             db.ref(path).transaction(v => (parseInt(v)||0) - nilai); 
@@ -542,15 +546,41 @@
     }
 
     let namaKasirAktif = localStorage.getItem("kasir_warung") || "";
+    
+    // FITUR GEMBOK DATABASE (FIREBASE AUTH)
     async function initKasir() {
-        if (!namaKasirAktif) {
-            const { value: nama } = await Swal.fire({ title: 'Sistem Kasir Siap!', input: 'text', inputPlaceholder:'Ketik nama kasir...', allowOutsideClick: false, allowEscapeKey: false, confirmButtonText: 'Mulai Bekerja 🚀', confirmButtonColor: '#4361ee' });
-            namaKasirAktif = nama ? String(nama).trim() : "Anonim"; 
-            try{localStorage.setItem("kasir_warung", namaKasirAktif);}catch(e){}
-            catatLogAktivitas("LOGIN", `Memulai sesi kasir baru`);
-        }
-        document.getElementById("namaKasirTampil").innerText = escapeHTML(namaKasirAktif);
-        initUIState(); 
+        firebase.auth().onAuthStateChanged(async (user) => {
+            if (!user) {
+                // Jika belum punya izin (atau cache terhapus), minta gembok
+                const { value: pass } = await Swal.fire({
+                    title: 'Gembok Keamanan Warung',
+                    input: 'password',
+                    inputPlaceholder: 'Masukkan Password Database...',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    confirmButtonText: 'Buka Kunci 🔐',
+                    confirmButtonColor: '#4361ee'
+                });
+
+                try {
+                    await firebase.auth().signInWithEmailAndPassword("kasir@nosa.com", pass);
+                    Swal.fire({toast:true, position:'top-end', icon:'success', title:'Database Terbuka!', showConfirmButton:false, timer:1500});
+                } catch (error) {
+                    Swal.fire('Gagal', 'Password Salah atau Tidak Ada Sinyal!', 'error').then(() => initKasir());
+                    return; 
+                }
+            }
+
+            // Setelah sukses buka gembok, lanjut minta nama kasir
+            if (!namaKasirAktif) {
+                const { value: nama } = await Swal.fire({ title: 'Sistem Kasir Siap!', input: 'text', inputPlaceholder:'Ketik nama kasir...', allowOutsideClick: false, allowEscapeKey: false, confirmButtonText: 'Mulai Bekerja 🚀', confirmButtonColor: '#4361ee' });
+                namaKasirAktif = nama ? String(nama).trim() : "Anonim"; 
+                try{localStorage.setItem("kasir_warung", namaKasirAktif);}catch(e){}
+                catatLogAktivitas("LOGIN", `Memulai sesi kasir baru`);
+            }
+            document.getElementById("namaKasirTampil").innerText = escapeHTML(namaKasirAktif);
+            initUIState(); 
+        });
     }
 
     async function gantiKasir() {
@@ -1280,7 +1310,7 @@
             } else {
                  let j = m === 'Tunai' ? 'bayar_hutang' : 'bayar_hutang_cashless'; 
                  let txt = `\n[INFO:SUCCESS:BAYAR HUTANG (CICIL): ${nama}]\n[INFO:MUTED:${m==='Tunai'?'TUNAI':'CASHLESS'}]`;
-                 amanPush('warung/history', { waktu: new Date().toLocaleTimeString('id-ID'), kasir: namaKasirAktif, barang: txt, total: nom, bayar: nom, kembali: 0, jenis: j, uangMasuk: nom, masukLaci: m==='Tunai' ? nom : 0, ref_hutang: key }, 'history');
+                 amanPush('warung/history', { waktu: new Date().toLocaleTimeString('id-ID'), kasir: namaKasirAktif, barang: txt, total: nom, bayar: total, kembali: 0, jenis: j, uangMasuk: nom, masukLaci: m==='Tunai' ? nom : 0, ref_hutang: key }, 'history');
                  if(m === 'Tunai') amanTambahUang('warung/pendapatan', nom);
                  catatLogAktivitas("CICIL HUTANG", `Dari ${nama} Rp ${nom.toLocaleString('id-ID')}`);
             }
@@ -1673,11 +1703,11 @@
         } finally { isUI_Locked = false; }
     }
 
-    // REGISTRASI SERVICE WORKER UNTUK ANTI-DINOSAURUS (OFFLINE MODE)
+    // REGISTRASI SERVICE WORKER (ANTI-DINOSAURUS)
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js').then(reg => {
-                console.log('Service Worker Terpasang! Web anti-dinosaurus aktif.');
+                console.log('SW Aktif! Siap untuk mode offline.');
             }).catch(err => {
                 console.log('SW Gagal:', err);
             });
