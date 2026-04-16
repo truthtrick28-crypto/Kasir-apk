@@ -199,9 +199,22 @@
             <button class="btn btn-main btn-action-kasir" style="background: var(--success); flex: 1.5;" onclick="triggerTransaksi('lunas')">💵 BAYAR TUNAI</button>
             <button class="btn btn-main btn-action-kasir" style="background: var(--info); flex: 1;" onclick="triggerTransaksi('cashless')">💳 CASHLESS</button>
         </div>
-        <div style="display: flex; gap: 10px;">
+        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
             <button class="btn btn-main btn-action-kasir" style="background: var(--warning); color:white; flex: 1.2;" onclick="triggerTransaksi('hutang')">📝 HUTANG / DP</button>
             <button class="btn btn-main btn-action-kasir" style="background: var(--text-muted); flex: 1;" onclick="triggerTransaksi('konsumsi')">☕ PAKAI SENDIRI</button>
+        </div>
+
+        <button class="btn btn-main btn-action-kasir" style="background: #6366f1; width: 100%; box-shadow: 0 4px 6px rgba(99,102,241,0.2);" onclick="simpanPesananGantung()">⏳ SIMPAN PESANAN (GANTUNG)</button>
+    </div>
+</div>
+
+<div class="card" style="border-top: 5px solid #6366f1;">
+    <div class="card-header-toggle" onclick="toggleSection('Gantung')">
+        <h3 style="color:#6366f1; margin:0;">🕒 PESANAN TERTUNDA (<span id="jumlahGantung">0</span>)</h3>
+        <span id="iconGantung" class="toggle-icon">▼</span>
+    </div>
+    <div id="contentGantung" style="display:none;">
+        <div id="containerPesananGantung">
         </div>
     </div>
 </div>
@@ -285,7 +298,7 @@
 </div>
 <script>
     // ==========================================
-    // MESIN UTAMA: ANTI-DELAY & KEAMANAN LACI
+    // MESIN UTAMA: ANTI-DELAY, KEAMANAN LACI, & HOLD ORDER
     // ==========================================
     window.onerror = function(msg) { console.warn("Sistem meredam error: ", msg); return true; };
     let isUI_Locked = false;
@@ -365,11 +378,13 @@
     });
 
     // PENCEGAH LAG (DEBOUNCE) SAAT RENDER BANYAK DATA
-    let renderHistTimer, renderHutangTimer, renderLogTimer, renderSampahTimer;
+    let renderHistTimer, renderHutangTimer, renderLogTimer, renderSampahTimer, renderGantungTimer;
     function reqRenderHist() { clearTimeout(renderHistTimer); renderHistTimer = setTimeout(executeRenderHistoryDanRekap, 30); }
     function reqRenderHutang() { clearTimeout(renderHutangTimer); renderHutangTimer = setTimeout(executeRenderBukuHutang, 30); }
     function reqRenderLog() { clearTimeout(renderLogTimer); renderLogTimer = setTimeout(executeRenderLogAktivitas, 30); }
     function reqRenderSampah() { clearTimeout(renderSampahTimer); renderSampahTimer = setTimeout(executeRenderSampah, 30); }
+    // FUNGSI BARU UTK RENDER DAFTAR GANTUNG
+    function reqRenderGantung() { clearTimeout(renderGantungTimer); renderGantungTimer = setTimeout(executeRenderPesananGantung, 30); }
 
     function renderUangLaciVisual() {
         let elTeks = document.getElementById('teksPendapatan');
@@ -402,12 +417,13 @@
     function loadLocalCache(key) { try { return JSON.parse(localStorage.getItem('nosa_cache_' + key)); } catch(e) { return null; } }
     function saveAntreanToMemori() { try { localStorage.setItem('nosa_antrean_transaksi', JSON.stringify(antreanOffline)); } catch(e) { if(antreanOffline.length > 10) { antreanOffline.shift(); saveAntreanToMemori(); } } }
 
-    // DATABASE LOKAL (CACHE)
+    // DATABASE LOKAL (CACHE) TERMASUK KAMAR BARU "GANTUNG"
     let dataMenuMentah = loadLocalCache('menu') || {}; 
     let historyDataMentah = loadLocalCache('history') || {}; 
     let dataHutangMentah = loadLocalCache('hutang') || {}; 
     let dataLogMentah = loadLocalCache('log') || {}; 
     let dataSampahMentah = loadLocalCache('sampah') || {};
+    let dataGantungMentah = loadLocalCache('gantung') || {}; // VARIABEL BARU UTK PESANAN GANTUNG
     let uangLaciGlobal = loadLocalCache('pendapatan') || 0;
     let pinRahasiaServer = loadLocalCache('pin') || "123456"; 
     let daftarPecahan = loadLocalCache('pecahan') || [20000, 50000, 100000];
@@ -429,12 +445,12 @@
         renderUangLaciVisual();
         renderPilihanPecahan(); 
         updateDropdownKategori(); 
-        // Jangan render menu dulu jika belum ada data, akan di-render oleh listener Firebase
         executeRenderGroupedMenu('');
         executeRenderBukuHutang(); 
         executeRenderHistoryDanRekap(); 
         executeRenderLogAktivitas(); 
         executeRenderSampah();
+        executeRenderPesananGantung(); // RENDER DAFTAR GANTUNG
         initKasir(); 
         fokusKategori('Semua'); 
         renderStruk(); 
@@ -499,6 +515,7 @@
         else if(kategori === 'hutang') { dataHutangMentah[key] = data; reqRenderHutang(); saveLocalCache('hutang', dataHutangMentah); }
         else if(kategori === 'menu') { dataMenuMentah[key] = data; executeRenderGroupedMenu(document.getElementById('cariDaftarMenu')?.value || ''); saveLocalCache('menu', dataMenuMentah); }
         else if(kategori === 'sampah') { dataSampahMentah[key] = data; reqRenderSampah(); saveLocalCache('sampah', dataSampahMentah); }
+        else if(kategori === 'gantung') { dataGantungMentah[key] = data; reqRenderGantung(); saveLocalCache('gantung', dataGantungMentah); }
     }
 
     function amanSetData(path, data, kategori, key) {
@@ -509,6 +526,7 @@
         else if(kategori === 'hutang') { dataHutangMentah[key] = data; reqRenderHutang(); saveLocalCache('hutang', dataHutangMentah); }
         else if(kategori === 'menu') { dataMenuMentah[key] = data; executeRenderGroupedMenu(document.getElementById('cariDaftarMenu')?.value || ''); saveLocalCache('menu', dataMenuMentah); }
         else if(kategori === 'sampah') { dataSampahMentah[key] = data; reqRenderSampah(); saveLocalCache('sampah', dataSampahMentah); }
+        else if(kategori === 'gantung') { dataGantungMentah[key] = data; reqRenderGantung(); saveLocalCache('gantung', dataGantungMentah); }
     }
 
     function amanHapus(path, kategori, key) {
@@ -520,6 +538,7 @@
         else if(kategori === 'menu') { if(key==='') dataMenuMentah={}; else delete dataMenuMentah[key]; executeRenderGroupedMenu(document.getElementById('cariDaftarMenu')?.value || ''); saveLocalCache('menu', dataMenuMentah); }
         else if(kategori === 'sampah') { if(key==='') dataSampahMentah={}; else delete dataSampahMentah[key]; reqRenderSampah(); saveLocalCache('sampah', dataSampahMentah); }
         else if(kategori === 'log') { if(key==='') dataLogMentah={}; else delete dataLogMentah[key]; reqRenderLog(); saveLocalCache('log', dataLogMentah); }
+        else if(kategori === 'gantung') { if(key==='') dataGantungMentah={}; else delete dataGantungMentah[key]; reqRenderGantung(); saveLocalCache('gantung', dataGantungMentah); }
     }
 
     function amanUpdateHutang(key, totalBaru) {
@@ -595,6 +614,7 @@
         db.ref('warung/hutang').on('value', s => { dataHutangMentah = s.exists() ? s.val() : {}; saveLocalCache('hutang', dataHutangMentah); reqRenderHutang(); });
         db.ref('warung/history').on('value', s => { historyDataMentah = s.exists() ? s.val() : {}; saveLocalCache('history', historyDataMentah); reqRenderHist(); });
         db.ref('warung/sampah').on('value', s => { dataSampahMentah = s.exists() ? s.val() : {}; saveLocalCache('sampah', dataSampahMentah); reqRenderSampah(); });
+        db.ref('warung/gantung').on('value', s => { dataGantungMentah = s.exists() ? s.val() : {}; saveLocalCache('gantung', dataGantungMentah); reqRenderGantung(); });
         
         inisiasiListenerLog(50); 
     }
@@ -610,17 +630,42 @@
 
     let namaKasirAktif = localStorage.getItem("kasir_warung") || "";
     
-    // FITUR GEMBOK DATABASE (FIREBASE AUTH)
+    // FITUR GEMBOK DATABASE (FIREBASE AUTH) - ANTI STUCK UI
     async function initKasir() {
+        // 1. LEPASKAN UI SEKARANG JUGA AGAR LAYAR TIDAK KOSONG/MACET KARENA SINYAL
+        initUIState(); 
+
+        // 2. URUS NAMA KASIR DULU
+        if (!namaKasirAktif) {
+            const { value: nama } = await Swal.fire({ 
+                title: 'Sistem Kasir Siap!', 
+                input: 'text', 
+                inputPlaceholder:'Ketik nama kasir...', 
+                allowOutsideClick: false, 
+                allowEscapeKey: false, 
+                confirmButtonText: 'Mulai Bekerja 🚀', 
+                confirmButtonColor: '#4361ee' 
+            });
+            namaKasirAktif = nama ? String(nama).trim() : "Anonim"; 
+            try{localStorage.setItem("kasir_warung", namaKasirAktif);}catch(e){}
+            catatLogAktivitas("LOGIN", `Memulai sesi kasir baru`);
+        }
+        let elKasir = document.getElementById("namaKasirTampil");
+        if(elKasir) elKasir.innerText = escapeHTML(namaKasirAktif);
+
+        // 3. JALANKAN AUTH FIREBASE DENGAN AMAN (MUNCUL SEBAGAI POP-UP)
         if(typeof firebase === 'undefined') return;
+        
         firebase.auth().onAuthStateChanged(async (user) => {
             if (!user) {
                 const { value: pass } = await Swal.fire({
                     title: 'Gembok Keamanan Warung',
                     input: 'password',
                     inputPlaceholder: 'Masukkan Password Database...',
-                    allowOutsideClick: false, allowEscapeKey: false,
-                    confirmButtonText: 'Buka Kunci 🔐', confirmButtonColor: '#4361ee'
+                    allowOutsideClick: false, 
+                    allowEscapeKey: false,
+                    confirmButtonText: 'Buka Kunci 🔐', 
+                    confirmButtonColor: '#4361ee'
                 });
 
                 try {
@@ -628,19 +673,8 @@
                     Swal.fire({toast:true, position:'top-end', icon:'success', title:'Database Terbuka!', showConfirmButton:false, timer:1500});
                 } catch (error) {
                     Swal.fire('Gagal Masuk', 'Alasan Firebase: ' + error.message, 'error').then(() => initKasir());
-                    return; 
                 }
             }
-
-            if (!namaKasirAktif) {
-                const { value: nama } = await Swal.fire({ title: 'Sistem Kasir Siap!', input: 'text', inputPlaceholder:'Ketik nama kasir...', allowOutsideClick: false, allowEscapeKey: false, confirmButtonText: 'Mulai Bekerja 🚀', confirmButtonColor: '#4361ee' });
-                namaKasirAktif = nama ? String(nama).trim() : "Anonim"; 
-                try{localStorage.setItem("kasir_warung", namaKasirAktif);}catch(e){}
-                catatLogAktivitas("LOGIN", `Memulai sesi kasir baru`);
-            }
-            let elKasir = document.getElementById("namaKasirTampil");
-            if(elKasir) elKasir.innerText = escapeHTML(namaKasirAktif);
-            initUIState(); 
         });
     }
 
@@ -661,7 +695,7 @@
             }
         } finally { isUI_Locked = false; }
     }
-        function toggleSection(id) {
+    function toggleSection(id) {
         try {
             const content = document.getElementById('content' + id); const icon = document.getElementById('icon' + id);
             if (content.style.display === 'none' || content.style.display === '') { content.style.display = 'block'; icon.innerText = '▲'; try{localStorage.setItem('ui_show_' + id, 'true');}catch(e){} } 
@@ -671,7 +705,7 @@
 
     function initUIState() {
         try {
-            ['Bayar', 'Hutang', 'History', 'TambahBarang', 'Menu'].forEach(id => {
+            ['Bayar', 'Hutang', 'History', 'TambahBarang', 'Menu', 'Gantung'].forEach(id => {
                 let state = localStorage.getItem('ui_show_' + id); let content = document.getElementById('content' + id); let icon = document.getElementById('icon' + id);
                 if(content && icon) {
                     let defaultShow = (id === 'Bayar' || id === 'Menu'); let shouldShow = state === null ? defaultShow : (state === 'true');
@@ -856,6 +890,64 @@
         else { const k = u - totalSemua; if(k < 0) { t.innerText = "KURANG UANG Rp " + Math.abs(k).toLocaleString('id-ID'); t.style.color = "var(--danger)"; } else { t.innerText = "Rp " + k.toLocaleString('id-ID'); t.style.color = "var(--success)"; } }
     }
 
+    // ==========================================
+    // LOGIKA PESANAN GANTUNG (HOLD ORDER) - AMAN!
+    // ==========================================
+    async function simpanPesananGantung() {
+        if(isUI_Locked) return;
+        if(keranjang.length === 0) return Swal.fire('Kosong!', 'Tidak ada barang di keranjang yang bisa digantung.', 'warning');
+        
+        const { value: nama } = await Swal.fire({ title: 'Simpan Pesanan', input: 'text', inputPlaceholder: 'Nama Meja atau Pelanggan...', showCancelButton: true, confirmButtonColor: '#6366f1' });
+        if(!nama || String(nama).trim() === '') return;
+
+        let payload = { nama: String(nama).trim(), waktu: new Date().toLocaleTimeString('id-ID'), keranjang: keranjang, total: totalSemua };
+        amanPush('warung/gantung', payload, 'gantung');
+        catatLogAktivitas("SIMPAN PESANAN", `Menyimpan pesanan ${payload.nama} (Rp ${totalSemua.toLocaleString('id-ID')})`);
+        
+        keranjang = []; simpanKeranjang(); document.getElementById('inputUang').value = ''; renderStruk(); 
+        document.querySelectorAll('.qty-num').forEach(el => el.innerText = "0");
+        Swal.fire({toast:true, position:'top-end', icon:'success', title:'Pesanan Tersimpan!', showConfirmButton:false, timer:1500});
+    }
+
+    function executeRenderPesananGantung() {
+        const container = document.getElementById('containerPesananGantung'); const badge = document.getElementById('jumlahGantung');
+        if (!container || !badge) return; let html = ''; let count = 0;
+        
+        Object.keys(dataGantungMentah).reverse().forEach(key => {
+            let item = dataGantungMentah[key]; if (!item) return; count++;
+            let itemsText = item.keranjang.map(k => `${k.nama} (${k.qty})`).join(', ');
+            html += `<div class="list-item" style="border-left: 5px solid #6366f1; padding: 12px; margin-bottom: 10px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><strong style="color:var(--text-main); font-size:14px;">🧑‍🤝‍🧑 ${escapeHTML(item.nama)}</strong><span style="font-size:11px; color:var(--text-muted);">${escapeHTML(item.waktu)}</span></div>
+                <div style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">${escapeHTML(itemsText)}</div>
+                <div style="display:flex; justify-content:space-between; align-items:center;"><strong style="color:var(--primary); font-size:14px;">Rp ${parseInt(item.total).toLocaleString('id-ID')}</strong><div style="display:flex; gap:6px;"><button class="btn btn-small" style="background:var(--success); color:white;" onclick="lanjutkanPesananGantung('${key}')">🛒 Lanjut Bayar</button><button class="btn btn-small" style="background:var(--danger); color:white;" onclick="hapusPesananGantung('${key}')">✖</button></div></div>
+            </div>`;
+        });
+        
+        badge.innerText = count;
+        if (count === 0) { container.innerHTML = '<div style="text-align:center; padding:15px; color:var(--text-muted); font-size:12px;">Tidak ada pesanan tertunda.</div>'; } else { container.innerHTML = html; }
+    }
+
+    async function lanjutkanPesananGantung(key) {
+        if(isUI_Locked) return;
+        if (keranjang.length > 0) {
+            let res = await Swal.fire({title: 'Keranjang Terisi!', text: 'Ada barang di keranjang saat ini. Timpa dengan pesanan yang digantung?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545'});
+            if (!res.isConfirmed) return;
+        }
+        let p = dataGantungMentah[key]; if (!p) return;
+        
+        keranjang = JSON.parse(JSON.stringify(p.keranjang));
+        amanHapus('warung/gantung/' + key, 'gantung', key);
+        
+        simpanKeranjang(); renderStruk(); executeRenderGroupedMenu(''); meluncurKeBayar();
+        Swal.fire({toast:true, position:'top-end', icon:'success', title:'Pesanan dimuat ke keranjang!', showConfirmButton:false, timer:1500});
+    }
+
+    async function hapusPesananGantung(key) {
+        if(isUI_Locked) return;
+        let res = await Swal.fire({title: 'Hapus Pesanan?', text: 'Pesanan yang digantung akan dihapus permanen.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545'});
+        if (res.isConfirmed) { amanHapus('warung/gantung/' + key, 'gantung', key); Swal.fire({toast:true, position:'top-end', icon:'success', title:'Dihapus!', showConfirmButton:false, timer:1500}); }
+    }
+
     async function triggerTransaksi(jenis) {
         if (isUI_Locked) return; if (keranjang.length === 0) return Swal.fire({title: "Kosong!", text:"Pilih barang dulu.", icon:"warning", confirmButtonColor: "#4361ee"});
         isUI_Locked = true; let btns = document.querySelectorAll('.btn-action-kasir'); btns.forEach(b => { b.style.pointerEvents = 'none'; b.style.opacity = '0.5'; });
@@ -985,7 +1077,6 @@
         } finally { isUI_Locked = false; }
     }
 
-    // PEMISAHAN MODAL AWAL DAN TAMBAH MODAL DI FORENSIK LACI
     function lihatRincianLaci() {
         let hitunganAsliSistem = rekapAkuntansiGlobal.modalAwalMasuk + rekapAkuntansiGlobal.tambahModalMasuk + rekapAkuntansiGlobal.tunaiMasuk + rekapAkuntansiGlobal.nyangkutMasuk - rekapAkuntansiGlobal.kasKeluar - rekapAkuntansiGlobal.kembalianKeluar;
         let selisih = uangLaciGlobal - hitunganAsliSistem; let infoSelisihHTML = '';
@@ -1046,7 +1137,6 @@
         Swal.fire({ title: '📦 Rincian Penjualan', html: htmlRekap, confirmButtonColor: '#4361ee' });
     }
 
-    // FIX BUG TERAKHIR: RUMUS BACA PAKET AYAM (HAPUS ENTER TERSEMBUNYI)
     function parseBarangHistory(str) {
         if(!str) return ''; let lines = str.split('\n'); let html = '';
         lines.forEach(line => {
@@ -1118,11 +1208,10 @@
                 
             try {
                 if(!['pengeluaran', 'bayar_kembalian', 'bayar_hutang', 'bayar_hutang_cashless', 'modal', 'tambah_modal'].includes(j)) {
-                    // FIX RUMUS: Bersihkan semua tag INFO dulu, lalu pecah per item dengan aman
                     let textBiasa = h.barang.replace(/\[INFO.*?\]/g, ''); 
                     let parts = textBiasa.split(/•|\n/); 
                     parts.forEach(i => { 
-                        i = i.trim(); // PAKSA BERSIHKAN ENTER TERSEMBUNYI
+                        i = i.trim();
                         if (i === "") return;
                         let matchKurung = i.match(/\((\d+)\)$/);
                         if (matchKurung) { 
@@ -1311,7 +1400,6 @@
         } finally { isUI_Locked = false; }
     }
 
-    // FIX RUMUS BACA PAKET AYAM DI PDF
     function downloadLaporan() {
         if (Object.keys(historyDataMentah).length === 0) return Swal.fire("Kosong", "Belum ada transaksi hari ini.", "info");
         
@@ -1505,5 +1593,3 @@
 </script>
 </body>
 </html>
-
-
