@@ -661,7 +661,7 @@
             }
         } finally { isUI_Locked = false; }
     }
-    function toggleSection(id) {
+        function toggleSection(id) {
         try {
             const content = document.getElementById('content' + id); const icon = document.getElementById('icon' + id);
             if (content.style.display === 'none' || content.style.display === '') { content.style.display = 'block'; icon.innerText = '▲'; try{localStorage.setItem('ui_show_' + id, 'true');}catch(e){} } 
@@ -770,7 +770,7 @@
                     let safeNama = escapeHTML(item.nama); let paramNama = escapeJSParam(item.nama);
                     finalHTML += `<tr>
                         <td style="padding:15px 0; width:50%;"><strong style="font-size:14px; color:#1f2937;">${safeNama}</strong><br>
-                            <div style="margin-top:4px;"><button class="btn-geser" onclick="geserUrutanMenu('${item.key}', 'naik')" title="Tukar Ke Atas">🔄</button><button class="btn-geser" onclick="geserUrutanMenu('${item.key}', 'turun')" title="Tukar Ke Bawah">🔄</button><span style="font-size:11px; color:var(--info); cursor:pointer; margin-left:4px;" onclick="editMenu('${item.key}')">✏️ Edit</span><span style="font-size:11px; color:#d1d5db; margin:0 4px;">|</span><span style="font-size:11px; color:var(--danger); cursor:pointer;" onclick="hapusMenu('${item.key}', '${paramNama}')">🗑️ Hapus</span></div>
+                            <div style="margin-top:4px;"><button class="btn-geser" onclick="geserUrutanMenu('${item.key}', 'naik')" title="Naik/Tukar Atas">🔼</button><button class="btn-geser" onclick="geserUrutanMenu('${item.key}', 'turun')" title="Turun/Tukar Bawah">🔽</button><span style="font-size:11px; color:var(--info); cursor:pointer; margin-left:4px;" onclick="editMenu('${item.key}')">✏️ Edit</span><span style="font-size:11px; color:#d1d5db; margin:0 4px;">|</span><span style="font-size:11px; color:var(--danger); cursor:pointer;" onclick="hapusMenu('${item.key}', '${paramNama}')">🗑️ Hapus</span></div>
                         </td>
                         <td style="font-weight:800; color:var(--primary); font-size:14px; text-align:center; width:20%;">${parseInt(item.harga || 0).toLocaleString('id-ID')}</td>
                         <td style="text-align:right; width:30%;"><div class="qty-control"><button class="btn-qty btn-minus" onclick="ubahQty('${item.key}', -1, '${paramNama}', ${item.harga})">-</button><span class="qty-num" id="qty-menu-${item.key}">${q}</span><button class="btn-qty btn-plus" onclick="ubahQty('${item.key}', 1, '${paramNama}', ${item.harga})">+</button></div></td>
@@ -788,8 +788,14 @@
 
     function importMenuBawaan() {
         if(isUI_Locked) return;
-        const data = [ {n:"Ayam", h:25000, k:"Makanan"}, {n:"Bebek", h:27000, k:"Makanan"}, {n:"Jerohan (1)", h:5000, k:"Makanan"}, {n:"Kepala (Bebek)", h:10000, k:"Makanan"}, {n:"Kepala (Ayam)", h:5000, k:"Makanan"}, {n:"Lele", h:13000, k:"Makanan"}, {n:"Nila", h:20000, k:"Makanan"}, {n:"Nasi", h:5000, k:"Makanan"}, {n:"Tahu tempe", h:5000, k:"Makanan"}, {n:"Rentengan Es (Kopi,Nutrisari,dll)", h:5000, k:"Minuman"}, {n:"Rentengan Hangat", h:4000, k:"Minuman"}, {n:"Teh", h:4000, k:"Minuman"}, {n:"Jeruk", h:5000, k:"Minuman"}, {n:"Paket Ayam (Ayam+Nasi+Es Teh)", h:33000, k:"Paket"}, {n:"Paket Bebek (Bebek+Nasi+Es Teh )", h:36000, k:"Paket"}, {n:"Paket Nila (Nila+Nasi+Teh)", h:29000, k:"Paket"}, {n:"Paket Lele (Lele+Nasi+Teh)", h:22000, k:"Paket"}, {n:"Paket Kepala Bebek", h:27000, k:"Paket"}, {n:"Paket Kepala Ayam", h:19000, k:"Paket"}, {n:"Paket Jeroan", h:19000, k:"Paket"} ];
-        Swal.fire({ title: 'Masukkan Menu Bawaan?', text: 'Daftar menu akan dimasukkan otomatis.', icon: 'info', showCancelButton: true, confirmButtonColor: '#8b5cf6' }).then((res) => { if(res.isConfirmed) { data.forEach(item => { amanPush('warung/menu', {nama: item.n, harga: item.h, kategori: item.k, urutan: 0}, 'menu'); }); catatLogAktivitas("IMPORT MENU", "Memasukkan daftar menu bawaan"); Swal.fire("Berhasil", "Menu telah ditambahkan!", "success"); } });
+        const data = [
+            {n:"Ayam", h:25000, k:"Makanan"}, {n:"Bebek", h:27000, k:"Makanan"}, {n:"Jerohan (1)", h:5000, k:"Makanan"}, {n:"Kepala (Bebek)", h:10000, k:"Makanan"}, {n:"Kepala (Ayam)", h:5000, k:"Makanan"}, {n:"Lele", h:13000, k:"Makanan"}, {n:"Nila", h:20000, k:"Makanan"}, {n:"Nasi", h:5000, k:"Makanan"}, {n:"Tahu tempe", h:5000, k:"Makanan"},
+            {n:"Rentengan Es (Kopi,Nutrisari,dll)", h:5000, k:"Minuman"}, {n:"Rentengan Hangat", h:4000, k:"Minuman"}, {n:"Teh", h:4000, k:"Minuman"}, {n:"Jeruk", h:5000, k:"Minuman"},
+            {n:"Paket Ayam (Ayam+Nasi+Es Teh)", h:33000, k:"Paket"}, {n:"Paket Bebek (Bebek+Nasi+Es Teh )", h:36000, k:"Paket"}, {n:"Paket Nila (Nila+Nasi+Teh)", h:29000, k:"Paket"}, {n:"Paket Lele (Lele+Nasi+Teh)", h:22000, k:"Paket"}, {n:"Paket Kepala Bebek", h:27000, k:"Paket"}, {n:"Paket Kepala Ayam", h:19000, k:"Paket"}, {n:"Paket Jeroan", h:19000, k:"Paket"}
+        ];
+        Swal.fire({ title: 'Masukkan Menu Bawaan?', text: 'Daftar menu akan dimasukkan otomatis.', icon: 'info', showCancelButton: true, confirmButtonColor: '#8b5cf6' }).then((res) => {
+            if(res.isConfirmed) { data.forEach(item => { amanPush('warung/menu', {nama: item.n, harga: item.h, kategori: item.k, urutan: 0}, 'menu'); }); catatLogAktivitas("IMPORT MENU", "Memasukkan daftar menu bawaan"); Swal.fire("Berhasil", "Menu telah ditambahkan!", "success"); }
+        });
     }
 
     function renderPilihanPecahan() {
@@ -804,8 +810,13 @@
     async function aturPecahanUang() {
         if(isUI_Locked) return;
         const { value: inputStr } = await Swal.fire({ title: 'Atur Pilihan Nominal Uang', html: 'Ketik nominal baru (angka saja):<br><span style="font-size:11px;color:red;">Atau biarkan kosong untuk menghapus pilihan terakhir.</span>', input: 'text', inputAttributes: { inputmode: 'numeric', oninput: 'formatUangLokal(this)' }, showCancelButton: true, confirmButtonColor: '#4361ee' });
-        if (inputStr !== undefined && inputStr !== "") { let n = parseInt(inputStr.replace(/[^0-9]/g, '')); if(n > 0 && !daftarPecahan.includes(n)) { daftarPecahan.push(n); daftarPecahan.sort((a,b)=>a-b); amanSetUangAtauPin('warung/pengaturan/pecahan', daftarPecahan); renderPilihanPecahan(); } } 
-        else if (inputStr === "") { const res = await Swal.fire({ title: 'Hapus Nominal?', text: "Mau hapus nominal apa?", input: 'select', inputOptions: daftarPecahan.reduce((o, key) => ({ ...o, [key]: key.toLocaleString('id-ID')}), {}), showCancelButton: true}); if (res.isConfirmed && res.value) { daftarPecahan = daftarPecahan.filter(v => v !== parseInt(res.value)); amanSetUangAtauPin('warung/pengaturan/pecahan', daftarPecahan); renderPilihanPecahan(); } }
+        if (inputStr !== undefined && inputStr !== "") {
+            let n = parseInt(inputStr.replace(/[^0-9]/g, ''));
+            if(n > 0 && !daftarPecahan.includes(n)) { daftarPecahan.push(n); daftarPecahan.sort((a,b)=>a-b); amanSetUangAtauPin('warung/pengaturan/pecahan', daftarPecahan); renderPilihanPecahan(); }
+        } else if (inputStr === "") {
+            const res = await Swal.fire({ title: 'Hapus Nominal?', text: "Mau hapus nominal apa?", input: 'select', inputOptions: daftarPecahan.reduce((o, key) => ({ ...o, [key]: key.toLocaleString('id-ID')}), {}), showCancelButton: true});
+            if (res.isConfirmed && res.value) { daftarPecahan = daftarPecahan.filter(v => v !== parseInt(res.value)); amanSetUangAtauPin('warung/pengaturan/pecahan', daftarPecahan); renderPilihanPecahan(); }
+        }
     }
 
     function ubahQty(key, delta, nama, harga) {
@@ -944,7 +955,6 @@
             if (ket === undefined) return; let catatan = ket ? String(ket).trim() : "Modal Laci Tambahan";
 
             let txt = `[INFO:SUCCESS:TAMBAH MODAL]\n${catatan}`;
-            // MENGGUNAKAN JENIS 'tambah_modal' AGAR BISA DIBEDAKAN DARI 'modal' (Modal Awal)
             amanPush('warung/history', { waktu: new Date().toLocaleTimeString('id-ID'), kasir: namaKasirAktif, barang: txt, total: nom, bayar: nom, kembali: 0, jenis: 'tambah_modal', uangMasuk: nom, masukLaci: nom }, 'history');
             amanTambahUang('warung/pendapatan', nom); catatLogAktivitas("TAMBAH MODAL", `Rp ${nom.toLocaleString('id-ID')} (${catatan})`);
             Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Modal Ditambahkan', showConfirmButton: false, timer: 1500});
@@ -1036,7 +1046,7 @@
         Swal.fire({ title: '📦 Rincian Penjualan', html: htmlRekap, confirmButtonColor: '#4361ee' });
     }
 
-    // PERBAIKAN BUG PEMBACAAN PAKET (AYAM+NASI)
+    // FIX BUG TERAKHIR: RUMUS BACA PAKET AYAM (HAPUS ENTER TERSEMBUNYI)
     function parseBarangHistory(str) {
         if(!str) return ''; let lines = str.split('\n'); let html = '';
         lines.forEach(line => {
@@ -1065,7 +1075,6 @@
             let kemKurang = parseInt(h.kembalianKurang) || 0; let tipMurni = parseInt(h.nilaiTipMurni) || 0;
             let isCashless = h.barang.includes('CASHLESS');
 
-            // LOGIKA PEMISAHAN MODAL & OMZET YG AKURAT
             if (j === 'modal') { m_awal += tot; }
             else if (j === 'tambah_modal') { m_tambah += tot; }
             else if (j === 'lunas') { omzet += tot; tMasuk += tot; }
@@ -1089,7 +1098,6 @@
             let nominalTampil = tot; if(j==='tip') nominalTampil = tot + tipMurni;
             let pref = (j === 'pengeluaran' || j === 'bayar_kembalian') ? "- " : "+ "; if(j === 'hutang' || j === 'konsumsi') pref = "";
 
-            // PENAMBAHAN 'TOTAL TAGIHAN' DI RIWAYAT
             histHTML += `
                 <div class="list-item" style="border-left: 6px solid ${bgC}">
                     <div class="list-header" onclick="toggleDetails('${safeKey}')">
@@ -1110,9 +1118,12 @@
                 
             try {
                 if(!['pengeluaran', 'bayar_kembalian', 'bayar_hutang', 'bayar_hutang_cashless', 'modal', 'tambah_modal'].includes(j)) {
-                    let textBiasa = h.barang.replace(/<[^>]*>/g, ' ').replace(/\[INFO.*?\]/g, ' '); 
-                    let parts = textBiasa.split(' • '); 
+                    // FIX RUMUS: Bersihkan semua tag INFO dulu, lalu pecah per item dengan aman
+                    let textBiasa = h.barang.replace(/\[INFO.*?\]/g, ''); 
+                    let parts = textBiasa.split(/•|\n/); 
                     parts.forEach(i => { 
+                        i = i.trim(); // PAKSA BERSIHKAN ENTER TERSEMBUNYI
+                        if (i === "") return;
                         let matchKurung = i.match(/\((\d+)\)$/);
                         if (matchKurung) { 
                             let q = parseInt(matchKurung[1], 10); 
@@ -1300,7 +1311,7 @@
         } finally { isUI_Locked = false; }
     }
 
-    // PDF REPORT LENGKAP DENGAN PEMISAHAN MODAL AWAL & TAMBAHAN
+    // FIX RUMUS BACA PAKET AYAM DI PDF
     function downloadLaporan() {
         if (Object.keys(historyDataMentah).length === 0) return Swal.fire("Kosong", "Belum ada transaksi hari ini.", "info");
         
@@ -1315,9 +1326,11 @@
             }
 
             if(!['pengeluaran', 'bayar_kembalian', 'bayar_hutang', 'bayar_hutang_cashless', 'modal', 'tambah_modal'].includes(j)){
-                let textBiasa = d.barang.replace(/<[^>]*>/g, ' ').replace(/\[INFO.*?\]/g, ' '); 
-                let parts = textBiasa.split(' • '); 
+                let textBiasa = d.barang.replace(/\[INFO.*?\]/g, ''); 
+                let parts = textBiasa.split(/•|\n/); 
                 parts.forEach(i => { 
+                    i = i.trim();
+                    if(i === "") return;
                     let matchKurung = i.match(/\((\d+)\)$/);
                     if (matchKurung) { 
                         let q = parseInt(matchKurung[1], 10); let n = i.substring(0, i.lastIndexOf('(')).trim();
@@ -1492,3 +1505,5 @@
 </script>
 </body>
 </html>
+
+
