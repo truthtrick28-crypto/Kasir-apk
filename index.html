@@ -1169,7 +1169,7 @@
             else if (j === 'tambah_modal') { m_tambah += tot; }
             else if (j === 'lunas') { omzet += tot; tMasuk += tot; }
             else if (j === 'cashless') { omzet += tot; cMasuk += tot; totalCashless += tot; }
-            else if (j === 'hutang') { if (kemKurang > 0) { omzet += tot; tokoNgutang += kemKurang; nMasuk += kemKurang; tMasuk += (uM - kemKurang); } else { omzet += tot; tMasuk += uM; } }
+            else if (j === 'hutang') { if (kemKurang > 0) { omzet += tot; tokoNgutang += kemKurang; nMasuk += kemKurang; tMasuk += (uM - kemKurang); } else { omzet += uM; tMasuk += uM; } }
             else if (j === 'tip') { omzet += tot; tip += tipMurni; tMasuk += (tot + tipMurni); }
             else if (j === 'pengeluaran') { pengeluaran += tot; kKeluar += tot; }
             else if (j === 'bayar_kembalian') { bayarKembalian += tot; if(isCashless) { totalCashless -= tot; } else { kembalianKeluar += tot; } } 
