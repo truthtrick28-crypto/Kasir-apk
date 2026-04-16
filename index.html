@@ -3,20 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Warung Makan Nosa - Aegis Forensic Balance</title>
+    <title>Warung Makan Nosa - Kasir Pro</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4361ee">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1011/1011812.png">
-
-    <script>
-        window.addEventListener('error', function(e) {
-            if(e.target && e.target.src && e.target.src.includes('firebase')) {
-                console.warn("Mesin Cloud gagal dimuat. Beralih ke Mode Luring Murni.");
-            }
-        }, true);
-    </script>
-
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -74,11 +64,8 @@
         .rekap-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #e2e8f0; padding: 10px 0; font-size: 13px; font-weight: 600; }
         .rekap-qty { color: var(--primary); font-size: 14px; background: #eff6ff; padding: 4px 10px; border-radius: 8px; font-weight: 800; }
         
-        .log-box { padding: 12px; border-bottom: 1px solid #e2e8f0; background: white; margin-bottom: 8px; border-radius: 8px; border-left: 4px solid var(--primary-dark); }
-        .log-top { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; font-family: monospace; }
-        .log-user { font-weight: bold; color: var(--primary); }
-        .log-action-text { font-size: 11px; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-right: 6px; color: var(--text-main); }
-        .log-detail-text { font-size: 13px; font-weight: 600; color: var(--text-main); }
+        .log-box-new { border-left: 4px solid var(--primary); background: #f8fafc; padding: 12px; margin-bottom: 8px; border-radius: 6px; font-size:12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .sampah-box-new { border-left: 4px solid var(--danger); background: #fef2f2; padding: 12px; margin-bottom: 8px; border-radius: 6px; font-size:12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         
         .accounting-box { background:#f8fafc; padding:20px; border-radius:16px; margin-bottom:20px; border:1px solid #e2e8f0;}
         .acc-row { display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px; font-weight:600; color:var(--text-muted); }
@@ -90,12 +77,17 @@
 
         .modal-rincian-isi { text-align: left; font-size: 13px; line-height: 1.6; color: var(--text-main); }
         .modal-rincian-isi hr { border: 0; border-top: 1px dashed #cbd5e1; margin: 12px 0; }
-        .modal-rincian-isi .row-rinci { display: flex; justify-content: space-between; margin-bottom: 6px; border-bottom: 1px dashed #f1f5f9; padding-bottom: 4px;}
-        .modal-rincian-isi .row-rinci span:last-child { font-weight: bold; font-family: monospace; font-size: 14px;}
         .modal-rincian-isi .info-box { background: #fef2f2; padding: 10px; border-radius: 8px; border: 1px solid #fecaca; margin-top: 15px; color: var(--danger); font-size: 12px; }
 
         .kat-badge { opacity: 0.4; color: white; border: 2px solid transparent; padding: 5px 12px; border-radius: 15px; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap; transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .kat-badge.active-kat { opacity: 1; transform: scale(1.05); border: 2px solid #1f2937; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        
+        .btn-geser { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px; font-size: 11px; cursor: pointer; transition: 0.2s; color: var(--text-main); font-weight: bold; margin-right: 3px;}
+        .btn-geser:active { background: #e2e8f0; transform: scale(0.9); }
+        
+        .math-block { background:#f1f5f9; padding:15px; border-radius:8px; border:1px dashed #cbd5e1; font-family:monospace; margin:15px 0; font-size:14px; text-align:left; color:#334155; }
+        .math-line { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .math-line.result { border-top: 1px dashed #94a3b8; padding-top: 5px; margin-top: 5px; font-weight: bold; font-size: 16px; color: var(--primary); }
     </style>
 </head>
 <body>
@@ -125,35 +117,44 @@
         </div>
     </div>
     
+    <button class="btn btn-small" style="width:100%; background:rgba(255,255,255,0.2); color:white; margin-bottom:12px; font-weight:bold; border:1px dashed rgba(255,255,255,0.4);" onclick="lihatBarangTerjualHariIni()">📦 Lihat Rincian Penjualan Hari Ini</button>
+
     <div style="display: flex; gap: 8px; position: relative; z-index: 1;">
         <button class="btn btn-small" onclick="tambahModalLaci()" style="flex:1; background: var(--success); color: white;">➕ Modal</button>
-        <button class="btn btn-small" onclick="catatPengeluaran()" style="flex:1.5; background: white; color: var(--primary); box-shadow:0 4px 6px rgba(0,0,0,0.1);">💸 Kas Keluar</button>
+        <button class="btn btn-small" onclick="catatPengeluaran()" style="flex:2; background: white; color: var(--primary); box-shadow:0 4px 6px rgba(0,0,0,0.1);">💸 Kas Keluar</button>
         <button class="btn btn-small" onclick="resetHistorySaja()" style="flex:1; background: var(--warning); color: white;">Tutup Buku</button>
+        <button class="btn btn-small" onclick="resetUangSaja()" style="flex:1; background: var(--danger); color: white;">Reset Laci</button>
     </div>
 </div>
 
 <div class="card" style="border-top: 5px solid var(--info);">
-    <h3 style="color:var(--info); margin-bottom:15px; border-bottom:none; padding-bottom:0;">📋 DAFTAR BARANG</h3>
-    <button id="btnImportMenu" class="btn btn-main" style="background:#8b5cf6; margin-bottom:15px; font-size:13px; display:none;" onclick="importMenuBawaan()">📦 Masukkan Menu Bawaan</button>
-    <input type="text" id="cariDaftarMenu" placeholder="🔎 Cari barang atau paket..." oninput="filterTampilanMenu()">
-    <div id="containerMenu"></div>
+    <div class="card-header-toggle" onclick="toggleSection('Menu')">
+        <h3 style="color:var(--info); margin:0;">📋 DAFTAR MENU</h3>
+        <span id="iconMenu" class="toggle-icon">▼</span>
+    </div>
+    
+    <div id="contentMenu" style="display:none;">
+        <button id="btnImportMenu" class="btn btn-main" style="background:#8b5cf6; margin-bottom:15px; font-size:13px; display:none;" onclick="importMenuBawaan()">📦 Masukkan Menu Bawaan</button>
+        <input type="text" id="cariDaftarMenu" placeholder="🔎 Cari barang atau paket..." oninput="filterTampilanMenu()">
+        <div id="containerMenu"></div>
 
-    <div style="margin-top:20px; border-top: 2px dashed #e2e8f0; padding-top:15px;">
-        <div class="card-header-toggle" onclick="toggleSection('TambahBarang')" style="border:none; padding-bottom:0; margin-bottom:10px;">
-            <span style="font-size:12px; font-weight:bold; color:var(--primary);">➕ TAMBAH BARANG MANUAL</span>
-            <span id="iconTambahBarang" class="toggle-icon">▼</span>
-        </div>
-        <div id="contentTambahBarang" style="display:none; margin-top:10px;">
-            <input type="text" id="namaBaru" placeholder="Nama Barang">
-            <select id="katBaru" onchange="cekKategoriManual()">
-                <option value="Makanan">🍔 Makanan</option>
-                <option value="Minuman">🥤 Minuman</option>
-                <option value="Paket">📦 Paket</option>
-                <option value="Lainnya">➕ Kategori Baru (Ketik Sendiri)</option>
-            </select>
-            <input type="text" id="katBaruManual" placeholder="Ketik Kategori Baru (Contoh: Sparepart)" style="display:none;">
-            <input type="text" id="hargaBaru" placeholder="Harga Jual (Angka)" inputmode="numeric" oninput="formatUangLokal(this)">
-            <button class="btn btn-main" style="background:var(--text-main);" onclick="tambahMenuBaru()">💾 Simpan Barang</button>
+        <div style="margin-top:20px; border-top: 2px dashed #e2e8f0; padding-top:15px;">
+            <div class="card-header-toggle" onclick="toggleSection('TambahBarang')" style="border:none; padding-bottom:0; margin-bottom:10px;">
+                <span style="font-size:12px; font-weight:bold; color:var(--primary);">➕ TAMBAH BARANG MANUAL</span>
+                <span id="iconTambahBarang" class="toggle-icon">▼</span>
+            </div>
+            <div id="contentTambahBarang" style="display:none; margin-top:10px;">
+                <input type="text" id="namaBaru" placeholder="Nama Barang">
+                <select id="katBaru" onchange="cekKategoriManual()">
+                    <option value="Makanan">🍔 Makanan</option>
+                    <option value="Minuman">🥤 Minuman</option>
+                    <option value="Paket">📦 Paket</option>
+                    <option value="Lainnya">➕ Kategori Baru (Ketik Sendiri)</option>
+                </select>
+                <input type="text" id="katBaruManual" placeholder="Ketik Kategori Baru (Contoh: Sparepart)" style="display:none;">
+                <input type="text" id="hargaBaru" placeholder="Harga Jual (Angka)" inputmode="numeric" oninput="formatUangLokal(this)">
+                <button class="btn btn-main" style="background:var(--text-main);" onclick="tambahMenuBaru()">💾 Simpan Barang</button>
+            </div>
         </div>
     </div>
 </div>
@@ -164,8 +165,13 @@
             <h3 style="color:var(--success); margin:0;">🛒 AREA PEMBAYARAN</h3>
             <span id="iconBayar" class="toggle-icon">▲</span>
         </div>
+        
+        <div style="position: relative; width: 100%; z-index: 50; margin-top: 5px;">
+            <input type="text" id="cariMenuCepat" placeholder="🔎 Cari & Tambah Cepat..." oninput="cariMenuPopup()" onfocus="cariMenuPopup()" style="margin-bottom: 5px; border-color:var(--success);">
+            <div id="searchPopup" style="display:none; position:absolute; top:100%; left:0; right:0; background:white; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.1); max-height:250px; overflow-y:auto; z-index:51;"></div>
+        </div>
+
         <div id="pintasanKategoriContainer" style="display:flex; gap:6px; overflow-x:auto; width:100%; padding: 5px 0;" onclick="event.stopPropagation();">
-            <button id="badge-kat-Semua" class="kat-badge active-kat" style="background:#64748b;" onclick="fokusKategori('Semua')">Semua</button>
         </div>
     </div>
     
@@ -206,7 +212,7 @@
         <span id="iconHutang" class="toggle-icon">▼</span>
     </div>
     <div id="contentHutang" style="display:none;">
-        <input type="text" id="cariDaftarHutang" placeholder="🔎 Cari pelanggan ngutang..." oninput="renderBukuHutang()">
+        <input type="text" id="cariDaftarHutang" placeholder="🔎 Cari pelanggan ngutang..." oninput="executeRenderBukuHutang()">
         <div id="containerHutang"></div>
     </div>
 </div>
@@ -219,24 +225,29 @@
     
     <div id="contentHistory" style="display:none;">
         <div class="accounting-box">
-            <h4 style="text-align:center; color:var(--primary); margin:0 0 15px 0; font-size:13px; text-transform:uppercase;">📊 Forensik Saldo & Laba Bersih</h4>
+            <h4 style="text-align:center; color:var(--primary); margin:0 0 15px 0; font-size:13px; text-transform:uppercase;">📊 Forensik Laba Bersih</h4>
             
             <div id="boxForensikMatematika" style="background:#fff; padding:15px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:15px; font-family:monospace; font-size:12px; line-height:1.6;">
                 Menghitung data forensik...
             </div>
 
-            <div class="acc-row"><span>(+) Penjualan (Lunas/DP/Cashless)</span><span class="acc-val" id="accOmzet" style="color:var(--success);">Rp 0</span></div>
+            <div class="acc-row"><span>(+) Penjualan Baru Lunas/DP</span><span class="acc-val" id="accOmzet" style="color:var(--success);">Rp 0</span></div>
             <div class="acc-row"><span>(+) Pelunasan Piutang Lama</span><span class="acc-val" id="accPelunasan" style="color:var(--success);">Rp 0</span></div>
             <div class="acc-row"><span>(+) Uang Tip / Ikhlas (Murni)</span><span class="acc-val" id="accTip" style="color:var(--success);">Rp 0</span></div>
             <div class="acc-row"><span>(-) Kas Keluar Belanja Barang</span><span class="acc-val" id="accKeluar" style="color:var(--danger);">Rp 0</span></div>
             
             <div style="border-top:1px dashed #cbd5e1; margin:10px 0; padding-top:10px;"></div>
             <div class="acc-row" style="color:var(--warning);"><span>(ℹ️) Titipan (Kembalian Belum Dikasih)</span><span class="acc-val" id="accNgutangBaru" style="color:var(--warning);">Rp 0</span></div>
+            <div class="acc-row" style="color:var(--primary);"><span>(ℹ️) Pelunasan Kembalian Pelanggan</span><span class="acc-val" id="accBayarKembalian" style="color:var(--primary);">Rp 0</span></div>
             
             <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #cbd5e1; text-align: center;">
                 <span style="font-size: 11px; font-weight: bold; color: var(--text-muted); letter-spacing:1px;">= TOTAL PENDAPATAN BERSIH HARI INI</span><br>
                 <div id="rekapTotalDuit" style="font-size: 32px; font-weight: 900; color: var(--primary); margin-top:5px;">Rp 0</div>
-                <button class="btn btn-small" style="background:var(--primary-dark); color:white; margin-top:10px; font-weight:bold; width:100%;" onclick="lihatRincianPendapatan()">ℹ️ Forensik Laba Bersih & Matematika</button>
+                
+                <div style="display:flex; gap:8px; margin-top:15px;">
+                    <button class="btn btn-small" style="background:var(--success); color:white; flex:1; font-weight:bold;" onclick="lihatRincianPendapatan()">ℹ️ Rincian Laba</button>
+                    <button class="btn btn-small" style="background:#1f2937; color:white; flex:1.2; font-weight:bold;" onclick="lihatBedaLaciLaba()">⚖️ Beda Laci & Laba?</button>
+                </div>
             </div>
         </div>
 
@@ -261,10 +272,10 @@
             </div>
         </div>
         
-        <p style="font-size: 11px; color: var(--text-muted); font-weight: bold; margin-bottom: 5px;">LOG AKTIVITAS:</p>
+        <p style="font-size: 11px; color: var(--text-muted); font-weight: bold; margin-bottom: 5px;">LOG AKTIVITAS KASIR:</p>
         <div id="containerLogAktivitas" style="max-height: 200px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px; margin-bottom: 15px; background: white; padding: 5px;"></div>
         
-        <p style="font-size: 11px; color: var(--text-muted); font-weight: bold; margin-bottom: 5px;">TONG SAMPAH:</p>
+        <p style="font-size: 11px; color: var(--text-muted); font-weight: bold; margin-bottom: 5px;">TONG SAMPAH TRANSAKSI:</p>
         <div id="containerSampah" style="max-height: 200px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px; background: white; padding: 5px;"></div>
     </div>
 </div>
@@ -272,15 +283,15 @@
 <div style="text-align: center; margin: 20px 0 30px 0;">
     <button onclick="toggleModeAdmin()" style="background: none; border: none; color: #a1a1aa; font-size: 11px; cursor: pointer; font-weight:bold; padding:10px; border: 1px dashed #e2e8f0; border-radius: 8px;">🛡️ Buka Panel Admin (Log & Sampah)</button>
 </div>
-
 <script>
     // ==========================================
-    // CORE AEGIS: SINKRONISASI & DATABASE
+    // MESIN UTAMA: ANTI-DELAY & KEAMANAN LACI
     // ==========================================
-    window.onerror = function() { return true; };
+    window.onerror = function(msg) { console.warn("Sistem meredam error: ", msg); return true; };
     let isUI_Locked = false;
     let currentKategoriFilter = 'Semua';
 
+    // FUNGSI SUPER (GLOBAL): Format Uang Real-time & Proteksi Huruf
     window.formatUangLokal = function(el) {
         let v = el.value.replace(/[^0-9]/g, '');
         el.value = v ? parseInt(v).toLocaleString('id-ID') : '';
@@ -290,30 +301,108 @@
     function escapeJSParam(str) { if(!str) return ''; return String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
     function buatIdLokal() { return 'ns_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 6); }
 
+    // PENGAMAN SWAL (JIKA INTERNET MATI SAAT BUKA APLIKASI)
+    if (typeof Swal === 'undefined') {
+        window.Swal = {
+            fire: async (...args) => {
+                let opt = args[0];
+                if(typeof opt === 'string') { alert(args.join('\n')); return { isConfirmed: true, value: true }; }
+                if(opt.input === 'text' || opt.input === 'password' || opt.input === 'number') { let res = prompt((opt.title||'') + '\n' + (opt.text||'').replace(/<[^>]*>?/gm, '')); if(res !== null && res !== "") return { isConfirmed: true, value: res }; return { isConfirmed: false }; }
+                if(opt.input === 'select') { let opts = opt.inputOptions ? Object.values(opt.inputOptions).join(' / ') : ''; let res = prompt((opt.title||'') + '\nPilih (Ketik Salah Satu): ' + opts); if(res !== null && res !== "") return { isConfirmed: true, value: res }; return { isConfirmed: false }; }
+                if(opt.showCancelButton) { let res = confirm((opt.title||'') + '\n' + (opt.text||'').replace(/<[^>]*>?/gm, '')); return { isConfirmed: res }; }
+                if(opt.html) { alert((opt.title||'') + '\n' + opt.html.replace(/<[^>]*>?/gm, '')); return { isConfirmed: true }; }
+                alert((opt.title||'') + '\n' + (opt.text||'').replace(/<[^>]*>?/gm, '')); return { isConfirmed: true };
+            }
+        };
+    }
+
+    // KONFIGURASI FIREBASE
     const firebaseConfig = {
-      apiKey: "AIzaSyAO9ywW_Cjibeexv2a8IlQPFd04sYUlVR0",
-      authDomain: "kasir-nosa.firebaseapp.com",
-      databaseURL: "https://kasir-nosa-default-rtdb.firebaseio.com",
-      projectId: "kasir-nosa",
-      storageBucket: "kasir-nosa.firebasestorage.app",
-      messagingSenderId: "512291099629",
-      appId: "1:512291099629:web:4f4e86870f4f236fa44de4",
-      measurementId: "G-4QV2GP10PS"
+        apiKey: "AIzaSyAO9ywW_Cjibeexv2a8IlQPFd04sYUlVR0",
+        authDomain: "kasir-nosa.firebaseapp.com",
+        databaseURL: "https://kasir-nosa-default-rtdb.firebaseio.com",
+        projectId: "kasir-nosa",
+        storageBucket: "kasir-nosa.firebasestorage.app",
+        messagingSenderId: "512291099629",
+        appId: "1:512291099629:web:4f4e86870f4f236fa44de4",
+        measurementId: "G-4QV2GP10PS"
     };
     
     if(typeof firebase !== 'undefined') { 
-        firebase.initializeApp(firebaseConfig); window.db = firebase.database(); 
+        firebase.initializeApp(firebaseConfig); 
+        window.db = firebase.database(); 
     } else { 
         window.db = { ref: () => ({ on: ()=>{}, update: ()=>{}, remove: ()=>{}, set: ()=>{}, transaction: ()=>{}, push: ()=>({key:'mock_'+Date.now()}) }) }; 
     }
 
-    function saveLocalCache(key, data) { try { localStorage.setItem('nosa_cache_' + key, JSON.stringify(data)); } catch(e) {} }
-    function loadLocalCache(key) { try { return JSON.parse(localStorage.getItem('nosa_cache_' + key)); } catch(e) { return null; } }
-
+    // ==========================================
+    // FAST SYNC & STATE MANAGEMENT (PENYIMPANAN OFFLINE)
+    // ==========================================
     let isOnline = navigator.onLine; 
     let isSyncing = false; 
     let antreanOffline = JSON.parse(localStorage.getItem('nosa_antrean_transaksi')) || [];
 
+    let offlineTimeout;
+    window.addEventListener('offline', () => { 
+        clearTimeout(offlineTimeout);
+        isOnline = false; 
+        let el = document.getElementById('statusKoneksi');
+        if(el) el.innerHTML = '<span style="background:var(--danger); color:white; font-size:9px; padding:3px 6px; border-radius:8px; font-weight:bold;">🔴 OFFLINE INSTAN (LOKAL)</span>';
+    });
+    
+    let onlineDebounce;
+    window.addEventListener('online', () => { 
+        if(onlineDebounce) return;
+        onlineDebounce = setTimeout(() => { onlineDebounce = null; }, 3000);
+        isOnline = true;
+        let el = document.getElementById('statusKoneksi');
+        if(typeof firebase === 'undefined') {
+            if(el) el.innerHTML = '<span style="background:var(--info); color:white; font-size:9px; padding:3px 6px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="location.reload()">🔄 SINYAL KEMBALI! KLIK UNTUK REFRESH</span>';
+        } else {
+            if(el) el.innerHTML = '<span style="background:var(--warning); color:white; font-size:9px; padding:3px 6px; border-radius:8px; font-weight:bold;">⏳ MENGHUBUNGKAN ULANG...</span>';
+            prosesAntreanTertunda();
+        }
+    });
+
+    // PENCEGAH LAG (DEBOUNCE) SAAT RENDER BANYAK DATA
+    let renderHistTimer, renderHutangTimer, renderLogTimer, renderSampahTimer;
+    function reqRenderHist() { clearTimeout(renderHistTimer); renderHistTimer = setTimeout(executeRenderHistoryDanRekap, 30); }
+    function reqRenderHutang() { clearTimeout(renderHutangTimer); renderHutangTimer = setTimeout(executeRenderBukuHutang, 30); }
+    function reqRenderLog() { clearTimeout(renderLogTimer); renderLogTimer = setTimeout(executeRenderLogAktivitas, 30); }
+    function reqRenderSampah() { clearTimeout(renderSampahTimer); renderSampahTimer = setTimeout(executeRenderSampah, 30); }
+
+    function renderUangLaciVisual() {
+        let elTeks = document.getElementById('teksPendapatan');
+        if(!elTeks) return;
+        if(uangLaciGlobal < 0) {
+            elTeks.style.color = "var(--danger)";
+            elTeks.innerText = "- " + Math.abs(uangLaciGlobal).toLocaleString('id-ID');
+        } else {
+            elTeks.style.color = "inherit";
+            elTeks.innerText = uangLaciGlobal.toLocaleString('id-ID');
+        }
+    }
+
+    function saveLocalCache(key, data) { 
+        try { localStorage.setItem('nosa_cache_' + key, JSON.stringify(data)); } 
+        catch(e) { 
+            if (key === 'history' || key === 'log') {
+                let keys = Object.keys(data);
+                if(keys.length > 50) {
+                    let newObj = {};
+                    keys.slice(Math.floor(keys.length / 2)).forEach(k => newObj[k] = data[k]);
+                    try{ localStorage.setItem('nosa_cache_' + key, JSON.stringify(newObj)); } catch(e){}
+                    if(key === 'history') historyDataMentah = newObj;
+                    if(key === 'log') dataLogMentah = newObj;
+                }
+            }
+        } 
+    }
+
+    function loadLocalCache(key) { try { return JSON.parse(localStorage.getItem('nosa_cache_' + key)); } catch(e) { return null; } }
+    function saveAntreanToMemori() { try { localStorage.setItem('nosa_antrean_transaksi', JSON.stringify(antreanOffline)); } catch(e) { if(antreanOffline.length > 10) { antreanOffline.shift(); saveAntreanToMemori(); } } }
+
+    // DATABASE LOKAL (CACHE)
     let dataMenuMentah = loadLocalCache('menu') || {}; 
     let historyDataMentah = loadLocalCache('history') || {}; 
     let dataHutangMentah = loadLocalCache('hutang') || {}; 
@@ -322,107 +411,236 @@
     let uangLaciGlobal = loadLocalCache('pendapatan') || 0;
     let pinRahasiaServer = loadLocalCache('pin') || "123456"; 
     let daftarPecahan = loadLocalCache('pecahan') || [20000, 50000, 100000];
-    let keranjang = []; let totalSemua = 0;
+    
+    let keranjang = []; 
+    let totalSemua = 0;
 
-    let rekapAkuntansiGlobal = { omzet: 0, pelunasan: 0, tip: 0, keluar: 0, ngutang: 0, bersih: 0, cashless: 0, tunaiMasuk:0, cashlessMasuk:0, kasKeluar:0, nyangkutMasuk:0, kembalianKeluar:0, modalMasuk: 0 };
-    let namaKasirAktif = localStorage.getItem("kasir_warung") || "";
+    // VARIABEL AKUNTANSI (MODAL AWAL & TAMBAH MODAL SUDAH DIPISAH)
+    let rekapAkuntansiGlobal = { 
+        omzet: 0, pelunasan: 0, tip: 0, keluar: 0, ngutang: 0, bersih: 0, 
+        cashless: 0, tunaiMasuk:0, cashlessMasuk:0, kasKeluar:0, 
+        nyangkutMasuk:0, kembalianKeluar:0, modalAwalMasuk:0, tambahModalMasuk:0
+    };
+    let rekapBarangTerjualHariIni = {};
+
+    try { let savedCart = localStorage.getItem('keranjang_warung'); if (savedCart) { keranjang = JSON.parse(savedCart); keranjang.forEach(p => totalSemua += (parseInt(p.subtotal)||0)); } } catch(e) {}
+    function simpanKeranjang() { try{ localStorage.setItem('keranjang_warung', JSON.stringify(keranjang)); } catch(e){} }
+    document.addEventListener("DOMContentLoaded", function() { 
+        renderUangLaciVisual();
+        renderPilihanPecahan(); 
+        updateDropdownKategori(); 
+        // Jangan render menu dulu jika belum ada data, akan di-render oleh listener Firebase
+        executeRenderGroupedMenu('');
+        executeRenderBukuHutang(); 
+        executeRenderHistoryDanRekap(); 
+        executeRenderLogAktivitas(); 
+        executeRenderSampah();
+        initKasir(); 
+        fokusKategori('Semua'); 
+        renderStruk(); 
+        
+        if(antreanOffline.length > 0 && typeof Swal.fire === 'function') {
+            Swal.fire({toast:true, position:'top-end', icon:'info', title:`Ada ${antreanOffline.length} data luring. Menunggu sinyal...`, showConfirmButton:false, timer:4000});
+        }
+        if(!navigator.onLine) {
+            let el = document.getElementById('statusKoneksi');
+            if(el) el.innerHTML = '<span style="background:var(--danger); color:white; font-size:9px; padding:3px 6px; border-radius:8px; font-weight:bold;">🔴 OFFLINE (MODE LOKAL)</span>';
+        }
+    });
 
     async function prosesAntreanTertunda() {
         if(antreanOffline.length === 0 || isSyncing || !isOnline || typeof firebase === 'undefined') return;
-        isSyncing = true; let targetBatas = antreanOffline.length; let eksekusiPromises = [];
+        isSyncing = true; 
+        let targetBatas = antreanOffline.length; 
+        let eksekusiPromises = [];
         
         for (let i = 0; i < targetBatas; i++) {
-            let t = antreanOffline[i]; let promise;
+            let tugas = antreanOffline[i];
+            let promise;
             try {
-                if(t.tipe === 'set') promise = db.ref(t.path).set(t.data);
-                else if(t.tipe === 'hapus') promise = db.ref(t.path).remove();
-                else if(t.tipe === 'update') promise = db.ref(t.path).update(t.data);
-                else if(t.tipe === 'tambah_uang') promise = db.ref(t.path).transaction(v => (parseInt(v)||0) + t.nilai);
-                else if(t.tipe === 'kurang_uang') promise = db.ref(t.path).transaction(v => (parseInt(v)||0) - t.nilai);
-                if(promise) eksekusiPromises.push({ promise: promise, tugas: t });
-            } catch(e) { eksekusiPromises.push({ promise: Promise.reject(e), tugas: t }); }
+                if(tugas.tipe === 'push') promise = db.ref(tugas.path).push(tugas.data);
+                else if(tugas.tipe === 'set') promise = db.ref(tugas.path).set(tugas.data);
+                else if(tugas.tipe === 'hapus') promise = db.ref(tugas.path).remove();
+                else if(tugas.tipe === 'update') promise = db.ref(tugas.path).update(tugas.data);
+                else if(tugas.tipe === 'tambah_uang') promise = db.ref(tugas.path).transaction(v => (parseInt(v)||0) + tugas.nilai);
+                else if(tugas.tipe === 'kurang_uang') promise = db.ref(tugas.path).transaction(v => (parseInt(v)||0) - tugas.nilai);
+                if(promise) eksekusiPromises.push({ promise: promise, tugas: tugas });
+            } catch(e) { 
+                eksekusiPromises.push({ promise: Promise.reject(e), tugas: tugas }); 
+            }
         }
         
         Promise.allSettled(eksekusiPromises.map(p => p.promise)).then((results) => {
             let sisaGagal = []; let berhasilCount = 0;
-            results.forEach((res, index) => { if(res.status === 'rejected') sisaGagal.push(eksekusiPromises[index].tugas); else berhasilCount++; });
-            antreanOffline = [...sisaGagal, ...antreanOffline.slice(targetBatas)];
-            localStorage.setItem('nosa_antrean_transaksi', JSON.stringify(antreanOffline)); isSyncing = false; 
-            if(berhasilCount > 0) Swal.fire({toast:true, position:'top-end', icon:'success', title:`${berhasilCount} Data Sinkron!`, showConfirmButton:false, timer:2000});
+            results.forEach((res, index) => { 
+                if(res.status === 'rejected') sisaGagal.push(eksekusiPromises[index].tugas); 
+                else berhasilCount++; 
+            });
+            let antreanBaruYgMenyusup = antreanOffline.slice(targetBatas);
+            antreanOffline = [...sisaGagal, ...antreanBaruYgMenyusup];
+            
+            if (antreanOffline.length === 0) { try{ localStorage.removeItem('nosa_antrean_transaksi'); }catch(e){} } else { saveAntreanToMemori(); }
+            
+            isSyncing = false; 
+            if(berhasilCount > 0 && typeof Swal.fire === 'function') {
+                Swal.fire({toast:true, position:'top-end', icon:'success', title:`${berhasilCount} Transaksi Masuk ke Cloud!`, showConfirmButton:false, timer:3000});
+            }
         });
     }
 
+    // PEMBUNGKUS DATABASE YANG AMAN UNTUK OFFLINE (FAST-SYNC)
     function amanPush(path, data, kategori) {
         let key = buatIdLokal(); 
         if(isOnline && typeof firebase !== 'undefined') { db.ref(path + '/' + key).set(data); }
-        else { antreanOffline.push({tipe:'set', path: path + '/' + key, data:data}); localStorage.setItem('nosa_antrean_transaksi', JSON.stringify(antreanOffline)); }
+        else { antreanOffline.push({tipe:'set', path: path + '/' + key, data:data}); saveAntreanToMemori(); }
         
-        if(kategori === 'history') { historyDataMentah[key] = data; executeRenderHistoryDanRekap(); saveLocalCache('history', historyDataMentah); }
-        else if(kategori === 'log') { dataLogMentah[key] = data; executeRenderLogAktivitas(); saveLocalCache('log', dataLogMentah); }
-        else if(kategori === 'hutang') { dataHutangMentah[key] = data; executeRenderBukuHutang(); saveLocalCache('hutang', dataHutangMentah); }
-        else if(kategori === 'menu') { dataMenuMentah[key] = data; updateDropdownKategori(); executeRenderGroupedMenu(''); saveLocalCache('menu', dataMenuMentah); }
-        else if(kategori === 'sampah') { dataSampahMentah[key] = data; executeRenderSampah(); saveLocalCache('sampah', dataSampahMentah); }
+        if(kategori === 'history') { historyDataMentah[key] = data; reqRenderHist(); saveLocalCache('history', historyDataMentah); }
+        else if(kategori === 'log') { dataLogMentah[key] = data; reqRenderLog(); saveLocalCache('log', dataLogMentah); }
+        else if(kategori === 'hutang') { dataHutangMentah[key] = data; reqRenderHutang(); saveLocalCache('hutang', dataHutangMentah); }
+        else if(kategori === 'menu') { dataMenuMentah[key] = data; executeRenderGroupedMenu(document.getElementById('cariDaftarMenu')?.value || ''); saveLocalCache('menu', dataMenuMentah); }
+        else if(kategori === 'sampah') { dataSampahMentah[key] = data; reqRenderSampah(); saveLocalCache('sampah', dataSampahMentah); }
     }
 
     function amanSetData(path, data, kategori, key) {
         if(isOnline && typeof firebase !== 'undefined') { db.ref(path).set(data); }
-        else { antreanOffline.push({tipe:'set', path:path, data:data}); localStorage.setItem('nosa_antrean_transaksi', JSON.stringify(antreanOffline)); }
-        if(kategori === 'menu') { dataMenuMentah[key] = data; executeRenderGroupedMenu(''); saveLocalCache('menu', dataMenuMentah); }
-        if(kategori === 'pendapatan') { uangLaciGlobal = data; renderUangLaciVisual(); saveLocalCache('pendapatan', uangLaciGlobal); }
+        else { antreanOffline.push({tipe:'set', path:path, data:data}); saveAntreanToMemori(); }
+        
+        if(kategori === 'history') { historyDataMentah[key] = data; reqRenderHist(); saveLocalCache('history', historyDataMentah); }
+        else if(kategori === 'hutang') { dataHutangMentah[key] = data; reqRenderHutang(); saveLocalCache('hutang', dataHutangMentah); }
+        else if(kategori === 'menu') { dataMenuMentah[key] = data; executeRenderGroupedMenu(document.getElementById('cariDaftarMenu')?.value || ''); saveLocalCache('menu', dataMenuMentah); }
+        else if(kategori === 'sampah') { dataSampahMentah[key] = data; reqRenderSampah(); saveLocalCache('sampah', dataSampahMentah); }
     }
 
     function amanHapus(path, kategori, key) {
         if(isOnline && typeof firebase !== 'undefined') { db.ref(path).remove(); }
-        else { antreanOffline.push({tipe:'hapus', path:path}); localStorage.setItem('nosa_antrean_transaksi', JSON.stringify(antreanOffline)); }
-        if(kategori === 'history') { if(key==='') historyDataMentah={}; else delete historyDataMentah[key]; executeRenderHistoryDanRekap(); saveLocalCache('history', historyDataMentah); }
-        else if(kategori === 'hutang') { if(key==='') dataHutangMentah={}; else delete dataHutangMentah[key]; executeRenderBukuHutang(); saveLocalCache('hutang', dataHutangMentah); }
-        else if(kategori === 'menu') { if(key==='') dataMenuMentah={}; else delete dataMenuMentah[key]; executeRenderGroupedMenu(''); saveLocalCache('menu', dataMenuMentah); }
-        else if(kategori === 'sampah') { if(key==='') dataSampahMentah={}; else delete dataSampahMentah[key]; executeRenderSampah(); saveLocalCache('sampah', dataSampahMentah); }
+        else { antreanOffline.push({tipe:'hapus', path:path}); saveAntreanToMemori(); }
+        
+        if(kategori === 'history') { if(key==='') historyDataMentah={}; else delete historyDataMentah[key]; reqRenderHist(); saveLocalCache('history', historyDataMentah); }
+        else if(kategori === 'hutang') { if(key==='') dataHutangMentah={}; else delete dataHutangMentah[key]; reqRenderHutang(); saveLocalCache('hutang', dataHutangMentah); }
+        else if(kategori === 'menu') { if(key==='') dataMenuMentah={}; else delete dataMenuMentah[key]; executeRenderGroupedMenu(document.getElementById('cariDaftarMenu')?.value || ''); saveLocalCache('menu', dataMenuMentah); }
+        else if(kategori === 'sampah') { if(key==='') dataSampahMentah={}; else delete dataSampahMentah[key]; reqRenderSampah(); saveLocalCache('sampah', dataSampahMentah); }
+        else if(kategori === 'log') { if(key==='') dataLogMentah={}; else delete dataLogMentah[key]; reqRenderLog(); saveLocalCache('log', dataLogMentah); }
     }
 
+    function amanUpdateHutang(key, totalBaru) {
+        if(isOnline && typeof firebase !== 'undefined') { db.ref('warung/hutang/' + key).update({ total: totalBaru }); }
+        else { antreanOffline.push({tipe:'update', path:'warung/hutang/' + key, data: {total: totalBaru}}); saveAntreanToMemori(); }
+        if(dataHutangMentah[key]) { dataHutangMentah[key].total = totalBaru; reqRenderHutang(); saveLocalCache('hutang', dataHutangMentah); }
+    }
+
+    // FITUR ANTI LACI GANDA & MINUS
     function amanTambahUang(path, nilai) {
-        if(isOnline && typeof firebase !== 'undefined') { db.ref(path).transaction(v => (parseInt(v)||0) + nilai); }
-        else { antreanOffline.push({tipe:'tambah_uang', path:path, nilai:nilai}); localStorage.setItem('nosa_antrean_transaksi', JSON.stringify(antreanOffline)); uangLaciGlobal += nilai; renderUangLaciVisual(); saveLocalCache('pendapatan', uangLaciGlobal); }
+        let n = parseInt(nilai) || 0;
+        if(isOnline && typeof firebase !== 'undefined') { 
+            db.ref(path).transaction(v => (parseInt(v)||0) + n); 
+        } else { 
+            antreanOffline.push({tipe:'tambah_uang', path:path, nilai:n}); 
+            saveAntreanToMemori(); 
+            uangLaciGlobal += n; 
+            renderUangLaciVisual(); 
+            saveLocalCache('pendapatan', uangLaciGlobal);
+        }
     }
 
     function amanKurangUang(path, nilai) {
-        if(isOnline && typeof firebase !== 'undefined') { db.ref(path).transaction(v => (parseInt(v)||0) - nilai); }
-        else { antreanOffline.push({tipe:'kurang_uang', path:path, nilai:nilai}); localStorage.setItem('nosa_antrean_transaksi', JSON.stringify(antreanOffline)); uangLaciGlobal -= nilai; renderUangLaciVisual(); saveLocalCache('pendapatan', uangLaciGlobal); }
+        let n = parseInt(nilai) || 0;
+        if(isOnline && typeof firebase !== 'undefined') { 
+            db.ref(path).transaction(v => (parseInt(v)||0) - n); 
+        } else { 
+            antreanOffline.push({tipe:'kurang_uang', path:path, nilai:n}); 
+            saveAntreanToMemori(); 
+            uangLaciGlobal -= n; 
+            renderUangLaciVisual(); 
+            saveLocalCache('pendapatan', uangLaciGlobal); 
+        }
     }
 
-    function catatLogAktivitas(aksi, detail) { amanPush('warung/log_aktivitas', { waktu: new Date().toLocaleDateString('id-ID') + " " + new Date().toLocaleTimeString('id-ID'), kasir: namaKasirAktif || "Sistem", aksi: String(aksi), detail: String(detail) }, 'log'); }
+    function amanSetUangAtauPin(path, nilai) {
+        if(isOnline && typeof firebase !== 'undefined') { db.ref(path).set(nilai); }
+        else { antreanOffline.push({tipe:'set', path:path, data:nilai}); saveAntreanToMemori(); }
+        
+        if(path === 'warung/pendapatan') { uangLaciGlobal = parseInt(nilai)||0; renderUangLaciVisual(); saveLocalCache('pendapatan', uangLaciGlobal); } 
+        else if (path === 'warung/pengaturan/pin') { pinRahasiaServer = nilai; saveLocalCache('pin', pinRahasiaServer); } 
+        else if (path === 'warung/pengaturan/pecahan') { daftarPecahan = nilai; saveLocalCache('pecahan', daftarPecahan); renderPilihanPecahan(); }
+    }
 
+    let logRefListener = null;
+    function inisiasiListenerLog(limitData) {
+        if(typeof firebase === 'undefined' || !isOnline) return;
+        if(logRefListener) db.ref('warung/log_aktivitas').off('value', logRefListener);
+        logRefListener = db.ref('warung/log_aktivitas').limitToLast(limitData).on('value', s => {
+            dataLogMentah = s.exists() ? s.val() : {}; 
+            saveLocalCache('log', dataLogMentah); 
+            reqRenderLog(); 
+        });
+    }
+
+    // LISTENER DATABASE REALTIME DARI CLOUD
     if(typeof firebase !== 'undefined') {
         db.ref('.info/connected').on('value', function(s) {
-            isOnline = (s.val() === true) && navigator.onLine; let conn = document.getElementById('statusKoneksi');
-            if (isOnline) { conn.innerHTML = '<span style="background:var(--success); color:white; font-size:9px; padding:3px 6px; border-radius:8px; font-weight:bold; box-shadow:0 0 8px var(--success);">🟢 ONLINE (SINKRON)</span>'; prosesAntreanTertunda(); } 
-            else if (!navigator.onLine) { conn.innerHTML = '<span style="background:var(--danger); color:white; font-size:9px; padding:3px 6px; border-radius:8px; font-weight:bold;">🔴 OFFLINE (ANTREAN AKTIF)</span>'; }
+            isOnline = (s.val() === true) && navigator.onLine; 
+            let conn = document.getElementById('statusKoneksi');
+            if (isOnline) { 
+                if(conn) conn.innerHTML = '<span style="background:var(--success); color:white; font-size:9px; padding:3px 6px; border-radius:8px; font-weight:bold; box-shadow:0 0 8px var(--success);">🟢 ONLINE (SINKRON)</span>'; 
+                prosesAntreanTertunda(); 
+            } else if (!navigator.onLine) { 
+                if(conn) conn.innerHTML = '<span style="background:var(--danger); color:white; font-size:9px; padding:3px 6px; border-radius:8px; font-weight:bold;">🔴 OFFLINE (ANTREAN AKTIF)</span>'; 
+            }
         });
-        db.ref('warung/pengaturan/pin').on('value', s => { if(s.exists()) { pinRahasiaServer = s.val(); saveLocalCache('pin', pinRahasiaServer); } });
+
+        db.ref('warung/pengaturan/pin').on('value', s => { if(s.exists()) { pinRahasiaServer = s.val(); saveLocalCache('pin', pinRahasiaServer); } else { db.ref('warung/pengaturan/pin').set("123456"); } });
         db.ref('warung/pengaturan/pecahan').on('value', s => { if(s.exists() && Array.isArray(s.val())) { daftarPecahan = s.val(); saveLocalCache('pecahan', daftarPecahan); renderPilihanPecahan(); } });
         db.ref('warung/pendapatan').on('value', s => { if(s.exists()){ uangLaciGlobal = parseInt(s.val()) || 0; saveLocalCache('pendapatan', uangLaciGlobal); renderUangLaciVisual(); }});
-        db.ref('warung/menu').on('value', s => { dataMenuMentah = s.exists() ? s.val() : {}; saveLocalCache('menu', dataMenuMentah); updateDropdownKategori(); executeRenderGroupedMenu(''); });
-        db.ref('warung/hutang').on('value', s => { dataHutangMentah = s.exists() ? s.val() : {}; saveLocalCache('hutang', dataHutangMentah); executeRenderBukuHutang(); });
-        db.ref('warung/history').on('value', s => { historyDataMentah = s.exists() ? s.val() : {}; saveLocalCache('history', historyDataMentah); executeRenderHistoryDanRekap(); });
-        db.ref('warung/sampah').on('value', s => { dataSampahMentah = s.exists() ? s.val() : {}; saveLocalCache('sampah', dataSampahMentah); executeRenderSampah(); });
+        db.ref('warung/menu').on('value', s => { dataMenuMentah = s.exists() ? s.val() : {}; saveLocalCache('menu', dataMenuMentah); updateDropdownKategori(); executeRenderGroupedMenu(document.getElementById('cariDaftarMenu')?.value || ''); });
+        db.ref('warung/hutang').on('value', s => { dataHutangMentah = s.exists() ? s.val() : {}; saveLocalCache('hutang', dataHutangMentah); reqRenderHutang(); });
+        db.ref('warung/history').on('value', s => { historyDataMentah = s.exists() ? s.val() : {}; saveLocalCache('history', historyDataMentah); reqRenderHist(); });
+        db.ref('warung/sampah').on('value', s => { dataSampahMentah = s.exists() ? s.val() : {}; saveLocalCache('sampah', dataSampahMentah); reqRenderSampah(); });
+        
+        inisiasiListenerLog(50); 
     }
 
+    function catatLogAktivitas(aksi, detail) { 
+        amanPush('warung/log_aktivitas', { waktu: new Date().toLocaleDateString('id-ID') + " " + new Date().toLocaleTimeString('id-ID'), kasir: namaKasirAktif || "Sistem", aksi: String(aksi), detail: String(detail) }, 'log'); 
+    }
+
+    function buangKeSampah(kategoriData, keyAsli, data) {
+        let payload = { ...data, meta_kategori: kategoriData, meta_key: keyAsli, meta_waktu_hapus: new Date().toLocaleString('id-ID'), meta_kasir: namaKasirAktif };
+        amanPush('warung/sampah', payload, 'sampah');
+    }
+
+    let namaKasirAktif = localStorage.getItem("kasir_warung") || "";
+    
+    // FITUR GEMBOK DATABASE (FIREBASE AUTH)
     async function initKasir() {
         if(typeof firebase === 'undefined') return;
         firebase.auth().onAuthStateChanged(async (user) => {
             if (!user) {
-                const { value: pass } = await Swal.fire({ title: 'Gembok Keamanan Warung', input: 'password', inputPlaceholder: 'Masukkan Password Database...', allowOutsideClick: false, allowEscapeKey: false, confirmButtonText: 'Buka Kunci 🔐', confirmButtonColor: '#4361ee' });
+                const { value: pass } = await Swal.fire({
+                    title: 'Gembok Keamanan Warung',
+                    input: 'password',
+                    inputPlaceholder: 'Masukkan Password Database...',
+                    allowOutsideClick: false, allowEscapeKey: false,
+                    confirmButtonText: 'Buka Kunci 🔐', confirmButtonColor: '#4361ee'
+                });
+
                 try {
                     await firebase.auth().signInWithEmailAndPassword("kasir@nosa.com", pass);
                     Swal.fire({toast:true, position:'top-end', icon:'success', title:'Database Terbuka!', showConfirmButton:false, timer:1500});
-                } catch (error) { Swal.fire('Gagal Masuk', 'Password Salah / Koneksi Gagal', 'error').then(() => initKasir()); return; }
+                } catch (error) {
+                    Swal.fire('Gagal Masuk', 'Alasan Firebase: ' + error.message, 'error').then(() => initKasir());
+                    return; 
+                }
             }
+
             if (!namaKasirAktif) {
                 const { value: nama } = await Swal.fire({ title: 'Sistem Kasir Siap!', input: 'text', inputPlaceholder:'Ketik nama kasir...', allowOutsideClick: false, allowEscapeKey: false, confirmButtonText: 'Mulai Bekerja 🚀', confirmButtonColor: '#4361ee' });
-                namaKasirAktif = nama ? String(nama).trim() : "Anonim"; try{localStorage.setItem("kasir_warung", namaKasirAktif);}catch(e){}
+                namaKasirAktif = nama ? String(nama).trim() : "Anonim"; 
+                try{localStorage.setItem("kasir_warung", namaKasirAktif);}catch(e){}
                 catatLogAktivitas("LOGIN", `Memulai sesi kasir baru`);
             }
-            document.getElementById("namaKasirTampil").innerText = escapeHTML(namaKasirAktif);
+            let elKasir = document.getElementById("namaKasirTampil");
+            if(elKasir) elKasir.innerText = escapeHTML(namaKasirAktif);
+            initUIState(); 
         });
     }
 
@@ -435,179 +653,251 @@
 
             const { value: baru } = await Swal.fire({ title: 'Nama Kasir Baru', input: 'text', inputValue: namaKasirAktif, showCancelButton: true, confirmButtonColor: '#4361ee' });
             if (baru && String(baru).trim() !== "") {
-                let namaBaru = String(baru).trim(); catatLogAktivitas("GANTI KASIR", `Sesi diganti dari ${namaKasirAktif} oleh ${namaBaru}`);
+                let namaBaru = String(baru).trim();
+                catatLogAktivitas("GANTI KASIR", `Sesi diganti dari ${namaKasirAktif} oleh ${namaBaru}`);
                 namaKasirAktif = namaBaru; try{localStorage.setItem("kasir_warung", namaKasirAktif);}catch(e){}
                 document.getElementById("namaKasirTampil").innerText = escapeHTML(namaKasirAktif);
-                Swal.fire({toast: true, position: 'top-end', icon: 'success', title: `Halo, ${escapeHTML(namaKasirAktif)}!`, showConfirmButton: false, timer: 1500});
+                if(typeof Swal.fire === 'function') Swal.fire({toast: true, position: 'top-end', icon: 'success', title: `Halo, ${escapeHTML(namaKasirAktif)}!`, showConfirmButton: false, timer: 1500});
             }
         } finally { isUI_Locked = false; }
     }
-
-    function renderUangLaciVisual() {
-        let elTeks = document.getElementById('teksPendapatan');
-        if(uangLaciGlobal < 0) { elTeks.style.color = "var(--danger)"; elTeks.innerText = "- " + Math.abs(uangLaciGlobal).toLocaleString('id-ID'); } 
-        else { elTeks.style.color = "inherit"; elTeks.innerText = uangLaciGlobal.toLocaleString('id-ID'); }
-    }
-
-    async function tambahModalLaci() {
-        if(isUI_Locked) return; isUI_Locked = true;
-        try {
-            const { value: nominalStr } = await Swal.fire({ title: 'Tambah Modal Laci', html: 'Masukkan jumlah uang fisik yang dimasukkan ke laci:', input: 'text', inputAttributes: { inputmode: 'numeric', oninput: 'formatUangLokal(this)' }, showCancelButton: true, confirmButtonColor: '#10b981' });
-            if (!nominalStr) return; let nom = parseInt(nominalStr.replace(/[^0-9]/g, ''));
-            if (isNaN(nom) || nom <= 0) return Swal.fire('Error', 'Nominal tidak valid!', 'error');
-            const { value: ket } = await Swal.fire({ title: 'Keterangan Modal', input: 'text', inputPlaceholder: 'Cth: Modal dari Bos, Kembalian Pagi', showCancelButton: true, confirmButtonColor: '#10b981' });
-            let catatan = ket ? String(ket).trim() : "Modal Laci";
-            let txt = `[INFO:SUCCESS:MODAL MASUK]\n${catatan}`;
-            amanPush('warung/history', { waktu: new Date().toLocaleTimeString('id-ID'), kasir: namaKasirAktif, barang: txt, total: nom, bayar: nom, kembali: 0, jenis: 'modal', uangMasuk: nom, masukLaci: nom }, 'history');
-            amanTambahUang('warung/pendapatan', nom); catatLogAktivitas("MODAL MASUK", `Rp ${nom.toLocaleString('id-ID')} (${catatan})`);
-            Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Modal Ditambahkan', showConfirmButton: false, timer: 1500});
-        } finally { isUI_Locked = false; }
-    }
-
-    const warnaKategoriPilihan = ['#f59e0b', '#0ea5e9', '#8b5cf6', '#ec4899', '#14b8a6', '#f43f5e', '#84cc16'];
-    function getWarnaKategori(kat) { 
-        let lKat = String(kat).toLowerCase(); if(lKat === 'makanan') return '#f59e0b'; if(lKat === 'minuman') return '#0ea5e9'; if(lKat === 'paket') return '#8b5cf6'; 
-        let hash = 0; for(let i=0; i<lKat.length; i++) hash = lKat.charCodeAt(i) + ((hash << 5) - hash);
-        return warnaKategoriPilihan[Math.abs(hash) % warnaKategoriPilihan.length]; 
-    }
-
-    function updateDropdownKategori() {
-        let sel = document.getElementById('katBaru'); let current = sel.value; let kats = ["Makanan", "Minuman", "Paket"];
-        Object.keys(dataMenuMentah).forEach(k => { if(dataMenuMentah[k] && typeof dataMenuMentah[k] === 'object') { let cat = dataMenuMentah[k].kategori; if(cat && !kats.includes(cat) && cat !== "Lainnya") kats.push(cat); } });
-        let html = ''; kats.forEach(c => html += `<option value="${escapeHTML(c)}">🏷️ ${escapeHTML(c)}</option>`); html += `<option value="Lainnya">➕ Kategori Baru (Ketik Sendiri)</option>`;
-        sel.innerHTML = html; if(Array.from(sel.options).some(opt => opt.value === current)) sel.value = current;
-        let htmlPintasan = `<button id="badge-kat-Semua" class="kat-badge ${currentKategoriFilter==='Semua'?'active-kat':''}" style="background:#64748b;" onclick="fokusKategori('Semua')">Semua</button>`;
-        kats.forEach(c => { let isActive = currentKategoriFilter === c ? 'active-kat' : ''; htmlPintasan += `<button id="badge-kat-${escapeHTML(c)}" class="kat-badge ${isActive}" style="background:${getWarnaKategori(c)};" onclick="fokusKategori('${escapeJSParam(c)}')">${escapeHTML(c)}</button>`; });
-        document.getElementById('pintasanKategoriContainer').innerHTML = htmlPintasan;
-    }
-
-    function executeRenderGroupedMenu(filterText = "") {
-        const container = document.getElementById('containerMenu'); let arrayMenu = [];
-        Object.keys(dataMenuMentah).forEach(key => { let m = dataMenuMentah[key]; if(m && m.nama) arrayMenu.push({ key: key, nama: String(m.nama), harga: parseInt(m.harga)||0, kategori: m.kategori ? String(m.kategori) : "Lainnya" }); });
-        if (currentKategoriFilter !== "" && currentKategoriFilter !== "Semua") { arrayMenu = arrayMenu.filter(m => m.kategori === currentKategoriFilter); }
-        let kats = []; arrayMenu.forEach(m => { if(!kats.includes(m.kategori)) kats.push(m.kategori); }); kats.sort(); 
-        let adaSamaSekali = false; let finalHTML = '';
-        kats.forEach(kat => {
-            let items = arrayMenu.filter(m => m.kategori === kat && m.nama.toLowerCase().includes(filterText.toLowerCase()));
-            if (items.length > 0) {
-                adaSamaSekali = true; let warna = getWarnaKategori(kat); finalHTML += `<div class="judul-kategori" style="background:${warna};">${escapeHTML(kat)}</div><table>`;
-                items.forEach(item => {
-                    const itemInK = keranjang.find(k => k.key === item.key); const q = itemInK ? itemInK.qty : 0; let safeNama = escapeHTML(item.nama); let paramNama = escapeJSParam(item.nama);
-                    finalHTML += `<tr><td style="padding:15px 0; width:50%;"><strong style="font-size:14px; color:#1f2937;">${safeNama}</strong><br><span style="font-size:11px; color:var(--info); cursor:pointer;" onclick="editMenu('${item.key}')">✏️ Edit</span><span style="font-size:11px; color:#d1d5db; margin:0 4px;">|</span><span style="font-size:11px; color:var(--danger); cursor:pointer;" onclick="hapusMenu('${item.key}', '${paramNama}')">🗑️ Hapus</span></td><td style="font-weight:800; color:var(--primary); font-size:14px; text-align:center; width:20%;">${parseInt(item.harga || 0).toLocaleString('id-ID')}</td><td style="text-align:right; width:30%;"><div class="qty-control"><button class="btn-qty btn-minus" onclick="ubahQty('${item.key}', -1, '${paramNama}', ${item.harga})">-</button><span class="qty-num" id="qty-menu-${item.key}">${q}</span><button class="btn-qty btn-plus" onclick="ubahQty('${item.key}', 1, '${paramNama}', ${item.harga})">+</button></div></td></tr>`;
-                }); finalHTML += `</table>`;
-            }
-        });
-        const btnImport = document.getElementById('btnImportMenu');
-        if(!adaSamaSekali && filterText === "" && (currentKategoriFilter === "" || currentKategoriFilter === "Semua")) { container.innerHTML = `<div style="text-align:center; padding:20px; color:#64748b; font-size:13px;">Daftar menu kosong.</div>`; if(btnImport) btnImport.style.display = "block"; } 
-        else { if(!adaSamaSekali) { container.innerHTML = `<div style="text-align:center; padding:20px; color:#64748b; font-size:13px;">Tidak ditemukan.</div>`; } else { container.innerHTML = finalHTML; } if(btnImport) btnImport.style.display = "none"; }
-    }
-
     function toggleSection(id) {
         try {
             const content = document.getElementById('content' + id); const icon = document.getElementById('icon' + id);
-            if (content.style.display === 'none' || content.style.display === '') { content.style.display = 'block'; icon.innerText = '▲'; } 
-            else { content.style.display = 'none'; icon.innerText = '▼'; }
+            if (content.style.display === 'none' || content.style.display === '') { content.style.display = 'block'; icon.innerText = '▲'; try{localStorage.setItem('ui_show_' + id, 'true');}catch(e){} } 
+            else { content.style.display = 'none'; icon.innerText = '▼'; try{localStorage.setItem('ui_show_' + id, 'false');}catch(e){} }
+        } catch(e){}
+    }
+
+    function initUIState() {
+        try {
+            ['Bayar', 'Hutang', 'History', 'TambahBarang', 'Menu'].forEach(id => {
+                let state = localStorage.getItem('ui_show_' + id); let content = document.getElementById('content' + id); let icon = document.getElementById('icon' + id);
+                if(content && icon) {
+                    let defaultShow = (id === 'Bayar' || id === 'Menu'); let shouldShow = state === null ? defaultShow : (state === 'true');
+                    if (shouldShow) { content.style.display = 'block'; icon.innerText = '▲'; } else { content.style.display = 'none'; icon.innerText = '▼'; }
+                }
+            });
         } catch(e){}
     }
 
     function meluncurKeBayar() {
         const cardBayar = document.getElementById('cardPembayaran'); const contentBayar = document.getElementById('contentBayar'); const iconBayar = document.getElementById('iconBayar');
-        if (contentBayar.style.display === 'none' || contentBayar.style.display === '') { contentBayar.style.display = 'block'; iconBayar.innerText = '▲'; }
-        cardBayar.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (contentBayar.style.display === 'none' || contentBayar.style.display === '') { contentBayar.style.display = 'block'; iconBayar.innerText = '▲'; try{localStorage.setItem('ui_show_Bayar', 'true');}catch(e){} }
+        cardBayar.scrollIntoView({ behavior: 'smooth', block: 'start' }); cardBayar.style.transform = "scale(1.02)"; setTimeout(() => { cardBayar.style.transform = "scale(1)"; }, 300);
     }
 
-    function fokusPencarian() { let inputCari = document.getElementById('cariDaftarMenu'); inputCari.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => { inputCari.focus(); }, 300); }
-    function fokusKategori(kat) { currentKategoriFilter = kat; document.querySelectorAll('.kat-badge').forEach(b => b.classList.remove('active-kat')); let safeKatId = kat === '' ? 'Semua' : kat; let elBadge = document.getElementById('badge-kat-' + safeKatId); if(elBadge) elBadge.classList.add('active-kat'); document.getElementById('cariDaftarMenu').value = ''; executeRenderGroupedMenu(''); }
+    function fokusPencarian() { let inputCari = document.getElementById('cariMenuCepat'); if(inputCari){ inputCari.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => { inputCari.focus(); }, 300); } }
+
+    function fokusKategori(kat) {
+        currentKategoriFilter = kat; document.querySelectorAll('.kat-badge').forEach(b => b.classList.remove('active-kat'));
+        let safeKatId = kat === '' ? 'Semua' : kat; let elBadge = document.getElementById('badge-kat-' + safeKatId); if(elBadge) elBadge.classList.add('active-kat');
+        let searchCepat = document.getElementById('cariMenuCepat'); let searchDaftar = document.getElementById('cariDaftarMenu');
+        if(searchCepat) searchCepat.value = ''; if(searchDaftar) searchDaftar.value = '';
+        executeRenderGroupedMenu(''); 
+        let container = document.getElementById('containerMenu'); if(container) container.scrollIntoView({behavior: 'smooth', block: 'start'});
+    }
+
+    function getWarnaKategori(kat) { kat = String(kat).toLowerCase(); if(kat === 'makanan') return '#f59e0b'; if(kat === 'minuman') return '#0ea5e9'; if(kat === 'paket') return '#8b5cf6'; return '#64748b'; }
+
+    function updateDropdownKategori() {
+        let sel = document.getElementById('katBaru'); if(!sel) return;
+        let current = sel.value; let kats = ["Makanan", "Minuman", "Paket"];
+        Object.keys(dataMenuMentah).forEach(k => { if(dataMenuMentah[k] && typeof dataMenuMentah[k] === 'object') { let cat = dataMenuMentah[k].kategori; if(cat && !kats.includes(cat) && cat !== "Lainnya") kats.push(cat); } });
+        let html = ''; kats.forEach(c => html += `<option value="${escapeHTML(c)}">🏷️ ${escapeHTML(c)}</option>`); html += `<option value="Lainnya">➕ Kategori Baru (Ketik Sendiri)</option>`;
+        sel.innerHTML = html; if(Array.from(sel.options).some(opt => opt.value === current)) sel.value = current;
+        
+        let htmlPintasan = `<button id="badge-kat-Semua" class="kat-badge ${currentKategoriFilter==='Semua'?'active-kat':''}" style="background:#64748b;" onclick="fokusKategori('Semua')">Semua</button>`;
+        kats.forEach(c => { let isActive = currentKategoriFilter === c ? 'active-kat' : ''; htmlPintasan += `<button id="badge-kat-${escapeHTML(c)}" class="kat-badge ${isActive}" style="background:${getWarnaKategori(c)};" onclick="fokusKategori('${escapeJSParam(c)}')">${escapeHTML(c)}</button>`; });
+        let pintasanCont = document.getElementById('pintasanKategoriContainer'); if(pintasanCont) pintasanCont.innerHTML = htmlPintasan;
+    }
+
     function cekKategoriManual() { let val = document.getElementById('katBaru').value; document.getElementById('katBaruManual').style.display = (val === 'Lainnya') ? 'block' : 'none'; }
     function dapatkanKategori(namaBarang) { for(let k in dataMenuMentah) { if(dataMenuMentah[k].nama === namaBarang) return dataMenuMentah[k].kategori || "Lainnya"; } return "Lainnya"; }
-    function filterTampilanMenu() { executeRenderGroupedMenu(document.getElementById('cariDaftarMenu').value); }
 
-    function renderPilihanPecahan() {
-        let c = document.getElementById('containerPecahan'); let html = ''; html += `<button class="chip" style="background:var(--success); color:white; border:none;" onclick="pilihUangPas()">UANG PAS</button>`; html += `<button class="chip" style="background:var(--warning); color:white; border:none;" onclick="pilihPecahan(0)">Rp 0</button>`; daftarPecahan.forEach(val => { html += `<button class="chip" onclick="pilihPecahan(${val})">${val.toLocaleString('id-ID')}</button>`; }); c.innerHTML = html;
+    function cariMenuPopup() {
+        let inputEl = document.getElementById('cariMenuCepat'); if(!inputEl) return;
+        let input = inputEl.value.toLowerCase(); let popup = document.getElementById('searchPopup');
+        if (input.trim() === "") { popup.style.display = 'none'; return; }
+        
+        let html = ''; let count = 0; let arrayMenu = [];
+        Object.keys(dataMenuMentah).forEach(key => { let m = dataMenuMentah[key]; if(m && m.nama && m.nama.toLowerCase().includes(input)) { arrayMenu.push({ key: key, nama: m.nama, harga: m.harga || 0, urutan: m.urutan || 0 }); } });
+        arrayMenu.sort((a,b) => a.urutan - b.urutan);
+
+        arrayMenu.forEach(m => {
+            let pNama = escapeJSParam(m.nama);
+            html += `<div style="padding:15px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; cursor:pointer; background:#fff; transition:0.2s;" onclick="ubahQty('${m.key}', 1, '${pNama}', ${m.harga}); document.getElementById('cariMenuCepat').value=''; document.getElementById('searchPopup').style.display='none';">
+                <div style="display:flex; flex-direction:column;"><span style="font-weight:800; font-size:14px; color:var(--text-main);">${escapeHTML(m.nama)}</span><span style="font-size:11px; color:var(--text-muted); font-weight:bold;">Rp ${m.harga.toLocaleString('id-ID')}</span></div>
+                <span style="background:var(--primary); color:white; padding:4px 10px; border-radius:8px; font-weight:bold; font-size:12px; box-shadow:0 2px 5px rgba(67,97,238,0.3);">+ Tambah</span>
+            </div>`; count++;
+        });
+
+        if(count > 0) { popup.innerHTML = html; popup.style.display = 'block'; } else { popup.innerHTML = `<div style="padding:15px; text-align:center; font-size:12px; color:var(--text-muted); font-weight:bold;">Barang tidak ditemukan 🔍</div>`; popup.style.display = 'block'; }
     }
 
-    function pilihPecahan(val) { document.getElementById('inputUang').value = val === 0 ? '' : val.toLocaleString('id-ID'); hitungKembalian(); }
-    function pilihUangPas() { document.getElementById('inputUang').value = totalSemua.toLocaleString('id-ID'); hitungKembalian(); }
+    document.addEventListener('click', function(event) { let popup = document.getElementById('searchPopup'); let input = document.getElementById('cariMenuCepat'); if (popup && popup.style.display === 'block' && event.target !== input && event.target !== popup && !popup.contains(event.target)) { popup.style.display = 'none'; } });
+
+    function geserUrutanMenu(key, arah) {
+        if(isUI_Locked) return; let arr = [];
+        Object.keys(dataMenuMentah).forEach(k => { if(dataMenuMentah[k]) arr.push({key: k, urutan: dataMenuMentah[k].urutan || 0}); });
+        arr.sort((a,b) => a.urutan - b.urutan);
+        let idx = arr.findIndex(item => item.key === key); if(idx === -1) return;
+        let targetIdx = arah === 'naik' ? idx - 1 : idx + 1;
+        if(targetIdx >= 0 && targetIdx < arr.length) {
+            let keyTarget = arr[targetIdx].key; let urutanSkrg = arr[idx].urutan; let urutanTarget = arr[targetIdx].urutan;
+            if(urutanSkrg === urutanTarget) { if(arah === 'naik') urutanTarget -= 1; else urutanTarget += 1; }
+            if(isOnline && typeof firebase !== 'undefined') { db.ref('warung/menu/' + key).update({urutan: urutanTarget}); db.ref('warung/menu/' + keyTarget).update({urutan: urutanSkrg}); }
+            dataMenuMentah[key].urutan = urutanTarget; dataMenuMentah[keyTarget].urutan = urutanSkrg;
+            saveLocalCache('menu', dataMenuMentah); executeRenderGroupedMenu(document.getElementById('cariDaftarMenu')?.value || '');
+        }
+    }
+
+    function executeRenderGroupedMenu(filterText = "") {
+        const container = document.getElementById('containerMenu'); if(!container) return;
+        let arrayMenu = []; Object.keys(dataMenuMentah).forEach(key => { let m = dataMenuMentah[key]; if(m && m.nama) arrayMenu.push({ key: key, nama: String(m.nama), harga: parseInt(m.harga)||0, kategori: m.kategori ? String(m.kategori) : "Lainnya", urutan: m.urutan || 0 }); });
+        arrayMenu.sort((a,b) => a.urutan - b.urutan);
+        if (currentKategoriFilter !== "" && currentKategoriFilter !== "Semua") { arrayMenu = arrayMenu.filter(m => m.kategori === currentKategoriFilter); }
+        let kats = []; arrayMenu.forEach(m => { if(!kats.includes(m.kategori)) kats.push(m.kategori); }); kats.sort(); 
+        let adaSamaSekali = false; let finalHTML = '';
+
+        kats.forEach(kat => {
+            let items = arrayMenu.filter(m => m.kategori === kat && m.nama.toLowerCase().includes(filterText.toLowerCase()));
+            if (items.length > 0) {
+                adaSamaSekali = true; let warna = getWarnaKategori(kat);
+                finalHTML += `<div class="judul-kategori" style="background:${warna};">${escapeHTML(kat)}</div><table>`;
+                items.forEach(item => {
+                    let q = 0; let itemInK = keranjang.find(k => k.key === item.key); if(itemInK) q = itemInK.qty;
+                    let safeNama = escapeHTML(item.nama); let paramNama = escapeJSParam(item.nama);
+                    finalHTML += `<tr>
+                        <td style="padding:15px 0; width:50%;"><strong style="font-size:14px; color:#1f2937;">${safeNama}</strong><br>
+                            <div style="margin-top:4px;"><button class="btn-geser" onclick="geserUrutanMenu('${item.key}', 'naik')" title="Tukar Ke Atas">🔄</button><button class="btn-geser" onclick="geserUrutanMenu('${item.key}', 'turun')" title="Tukar Ke Bawah">🔄</button><span style="font-size:11px; color:var(--info); cursor:pointer; margin-left:4px;" onclick="editMenu('${item.key}')">✏️ Edit</span><span style="font-size:11px; color:#d1d5db; margin:0 4px;">|</span><span style="font-size:11px; color:var(--danger); cursor:pointer;" onclick="hapusMenu('${item.key}', '${paramNama}')">🗑️ Hapus</span></div>
+                        </td>
+                        <td style="font-weight:800; color:var(--primary); font-size:14px; text-align:center; width:20%;">${parseInt(item.harga || 0).toLocaleString('id-ID')}</td>
+                        <td style="text-align:right; width:30%;"><div class="qty-control"><button class="btn-qty btn-minus" onclick="ubahQty('${item.key}', -1, '${paramNama}', ${item.harga})">-</button><span class="qty-num" id="qty-menu-${item.key}">${q}</span><button class="btn-qty btn-plus" onclick="ubahQty('${item.key}', 1, '${paramNama}', ${item.harga})">+</button></div></td>
+                    </tr>`;
+                }); finalHTML += `</table>`;
+            }
+        });
+
+        const btnImport = document.getElementById('btnImportMenu');
+        if(!adaSamaSekali && filterText === "" && (currentKategoriFilter === "" || currentKategoriFilter === "Semua")) { container.innerHTML = `<div style="text-align:center; padding:20px; color:#64748b; font-size:13px;">Daftar menu kosong. Silakan import.</div>`; if(btnImport) btnImport.style.display = "block"; } 
+        else { if(!adaSamaSekali) { container.innerHTML = `<div style="text-align:center; padding:20px; color:#64748b; font-size:13px;">Pencarian tidak ditemukan.</div>`; } else { container.innerHTML = finalHTML; } if(btnImport) btnImport.style.display = "none"; }
+    }
+
+    function filterTampilanMenu() { let val = document.getElementById('cariDaftarMenu')?.value || ""; executeRenderGroupedMenu(val); }
+
+    function importMenuBawaan() {
+        if(isUI_Locked) return;
+        const data = [ {n:"Ayam", h:25000, k:"Makanan"}, {n:"Bebek", h:27000, k:"Makanan"}, {n:"Jerohan (1)", h:5000, k:"Makanan"}, {n:"Kepala (Bebek)", h:10000, k:"Makanan"}, {n:"Kepala (Ayam)", h:5000, k:"Makanan"}, {n:"Lele", h:13000, k:"Makanan"}, {n:"Nila", h:20000, k:"Makanan"}, {n:"Nasi", h:5000, k:"Makanan"}, {n:"Tahu tempe", h:5000, k:"Makanan"}, {n:"Rentengan Es (Kopi,Nutrisari,dll)", h:5000, k:"Minuman"}, {n:"Rentengan Hangat", h:4000, k:"Minuman"}, {n:"Teh", h:4000, k:"Minuman"}, {n:"Jeruk", h:5000, k:"Minuman"}, {n:"Paket Ayam (Ayam+Nasi+Es Teh)", h:33000, k:"Paket"}, {n:"Paket Bebek (Bebek+Nasi+Es Teh )", h:36000, k:"Paket"}, {n:"Paket Nila (Nila+Nasi+Teh)", h:29000, k:"Paket"}, {n:"Paket Lele (Lele+Nasi+Teh)", h:22000, k:"Paket"}, {n:"Paket Kepala Bebek", h:27000, k:"Paket"}, {n:"Paket Kepala Ayam", h:19000, k:"Paket"}, {n:"Paket Jeroan", h:19000, k:"Paket"} ];
+        Swal.fire({ title: 'Masukkan Menu Bawaan?', text: 'Daftar menu akan dimasukkan otomatis.', icon: 'info', showCancelButton: true, confirmButtonColor: '#8b5cf6' }).then((res) => { if(res.isConfirmed) { data.forEach(item => { amanPush('warung/menu', {nama: item.n, harga: item.h, kategori: item.k, urutan: 0}, 'menu'); }); catatLogAktivitas("IMPORT MENU", "Memasukkan daftar menu bawaan"); Swal.fire("Berhasil", "Menu telah ditambahkan!", "success"); } });
+    }
+
+    function renderPilihanPecahan() {
+        let c = document.getElementById('containerPecahan'); if(!c) return; let html = '';
+        html += `<button class="chip" style="background:var(--success); color:white; border:none;" onclick="pilihUangPas()">UANG PAS</button><button class="chip" style="background:var(--warning); color:white; border:none;" onclick="pilihPecahan(0)">Rp 0</button>`;
+        daftarPecahan.forEach(val => { html += `<button class="chip" onclick="pilihPecahan(${val})">${val.toLocaleString('id-ID')}</button>`; }); c.innerHTML = html;
+    }
+
+    function pilihPecahan(val) { let el = document.getElementById('inputUang'); if(el) { el.value = val === 0 ? '' : val.toLocaleString('id-ID'); hitungKembalian(); } }
+    function pilihUangPas() { let el = document.getElementById('inputUang'); if(el) { el.value = totalSemua.toLocaleString('id-ID'); hitungKembalian(); } }
 
     async function aturPecahanUang() {
         if(isUI_Locked) return;
         const { value: inputStr } = await Swal.fire({ title: 'Atur Pilihan Nominal Uang', html: 'Ketik nominal baru (angka saja):<br><span style="font-size:11px;color:red;">Atau biarkan kosong untuk menghapus pilihan terakhir.</span>', input: 'text', inputAttributes: { inputmode: 'numeric', oninput: 'formatUangLokal(this)' }, showCancelButton: true, confirmButtonColor: '#4361ee' });
-        if (inputStr !== undefined && inputStr !== "") { let n = parseInt(inputStr.replace(/[^0-9]/g, '')); if(n > 0 && !daftarPecahan.includes(n)) { daftarPecahan.push(n); daftarPecahan.sort((a,b)=>a-b); amanSetData('warung/pengaturan/pecahan', daftarPecahan, 'pecahan', ''); renderPilihanPecahan(); } } 
-        else if (inputStr === "") { const res = await Swal.fire({ title: 'Hapus Nominal?', text: "Mau hapus nominal apa?", input: 'select', inputOptions: daftarPecahan.reduce((o, key) => ({ ...o, [key]: key.toLocaleString('id-ID')}), {}), showCancelButton: true}); if (res.isConfirmed && res.value) { daftarPecahan = daftarPecahan.filter(v => v !== parseInt(res.value)); amanSetData('warung/pengaturan/pecahan', daftarPecahan, 'pecahan', ''); renderPilihanPecahan(); } }
+        if (inputStr !== undefined && inputStr !== "") { let n = parseInt(inputStr.replace(/[^0-9]/g, '')); if(n > 0 && !daftarPecahan.includes(n)) { daftarPecahan.push(n); daftarPecahan.sort((a,b)=>a-b); amanSetUangAtauPin('warung/pengaturan/pecahan', daftarPecahan); renderPilihanPecahan(); } } 
+        else if (inputStr === "") { const res = await Swal.fire({ title: 'Hapus Nominal?', text: "Mau hapus nominal apa?", input: 'select', inputOptions: daftarPecahan.reduce((o, key) => ({ ...o, [key]: key.toLocaleString('id-ID')}), {}), showCancelButton: true}); if (res.isConfirmed && res.value) { daftarPecahan = daftarPecahan.filter(v => v !== parseInt(res.value)); amanSetUangAtauPin('warung/pengaturan/pecahan', daftarPecahan); renderPilihanPecahan(); } }
     }
 
-    function simpanKeranjang() { try{ localStorage.setItem('keranjang_warung', JSON.stringify(keranjang)); } catch(e){} }
     function ubahQty(key, delta, nama, harga) {
-        if(isUI_Locked) return;
-        let newQty = 0; const idx = keranjang.findIndex(k => k.key === key);
-        if (idx !== -1) { keranjang[idx].qty += delta; newQty = keranjang[idx].qty; if (keranjang[idx].qty <= 0) keranjang.splice(idx, 1); else keranjang[idx].subtotal = keranjang[idx].qty * harga; } 
-        else if (delta > 0) { newQty = 1; keranjang.push({ key: key, nama: nama, harga: harga, qty: 1, subtotal: harga }); }
-        let el = document.getElementById('qty-menu-' + key); if(el) el.innerText = newQty;
-        simpanKeranjang(); renderStruk(); 
+        if(isUI_Locked) return Swal.fire({toast:true, position:'top-end', icon:'warning', title:'Terkunci! Tunggu proses.', showConfirmButton:false, timer:1500});
+        let newQty = 0; let d = parseInt(delta) || 0; let h = parseInt(harga) || 0; const idx = keranjang.findIndex(k => k.key === key);
+        if (idx !== -1) { let currentQty = parseInt(keranjang[idx].qty) || 0; keranjang[idx].qty = currentQty + d; newQty = keranjang[idx].qty; if (keranjang[idx].qty <= 0) keranjang.splice(idx, 1); else keranjang[idx].subtotal = keranjang[idx].qty * h; } 
+        else if (d > 0) { newQty = 1; keranjang.push({ key: key, nama: nama, harga: h, qty: 1, subtotal: h }); }
+        let el = document.getElementById('qty-menu-' + key); if(el) el.innerText = newQty; simpanKeranjang(); renderStruk(); 
     }
     
     function ubahQtyDariStruk(idx, delta) { 
-        if(isUI_Locked) return; let key = keranjang[idx].key; keranjang[idx].qty += delta; let newQty = keranjang[idx].qty;
-        if (keranjang[idx].qty <= 0) keranjang.splice(idx, 1); else keranjang[idx].subtotal = keranjang[idx].qty * keranjang[idx].harga; 
+        if(isUI_Locked) return; let key = keranjang[idx].key; let d = parseInt(delta) || 0; let currentQty = parseInt(keranjang[idx].qty) || 0;
+        keranjang[idx].qty = currentQty + d; let newQty = keranjang[idx].qty;
+        if (keranjang[idx].qty <= 0) keranjang.splice(idx, 1); else keranjang[idx].subtotal = keranjang[idx].qty * parseInt(keranjang[idx].harga); 
         let el = document.getElementById('qty-menu-' + key); if(el) el.innerText = newQty > 0 ? newQty : 0; simpanKeranjang(); renderStruk(); 
     }
     
-    function hapusDariStruk(idx) { 
-        if(isUI_Locked) return; let key = keranjang[idx].key; keranjang.splice(idx, 1); let el = document.getElementById('qty-menu-' + key); if(el) el.innerText = "0"; simpanKeranjang(); renderStruk(); 
-    }
+    function hapusDariStruk(idx) { if(isUI_Locked) return; let key = keranjang[idx].key; keranjang.splice(idx, 1); let el = document.getElementById('qty-menu-' + key); if(el) el.innerText = "0"; simpanKeranjang(); renderStruk(); }
 
     function renderStruk() {
-        const ds = document.getElementById('daftarStruk'); let elInput = document.getElementById('inputUang'); totalSemua = 0;
-        if(keranjang.length === 0) { ds.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px; font-size:12px; background:#f9fafb; border-radius:10px; border:1px dashed #e2e8f0;">🛒 Keranjang kosong. Silakan tambah barang.</div>'; document.getElementById('teksTotal').innerText = "0"; hitungKembalian(); return; }
+        const ds = document.getElementById('daftarStruk'); if(!ds) return; let elInput = document.getElementById('inputUang'); totalSemua = 0;
+        if(keranjang.length === 0) { ds.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px; font-size:12px; background:#f9fafb; border-radius:10px; border:1px dashed #e2e8f0;">🛒 Keranjang kosong. Silakan tambah barang.</div>'; document.getElementById('teksTotal').innerText = "0"; if(elInput) elInput.value = ""; hitungKembalian(); return; }
         let tempHTML = '';
-        keranjang.forEach((p, i) => {
-            let sub = parseInt(p.subtotal) || 0; totalSemua += sub;
-            tempHTML += `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px dashed #e2e8f0;"><div style="display:flex; align-items:center; gap:10px;"><button style="background:var(--danger); color:white; width:24px; height:24px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="hapusDariStruk(${i})">✖</button><div style="display:flex; align-items:center; background:#f1f5f9; border-radius:20px; padding:2px; border:1px solid #e2e8f0;"><button style="background:var(--danger); color:white; width:24px; height:24px; border:none; border-radius:50%; font-weight:bold; cursor:pointer;" onclick="ubahQtyDariStruk(${i}, -1)">-</button><span style="font-size:13px; font-weight:bold; min-width:24px; text-align:center; color:var(--text-main);">${p.qty}</span><button style="background:var(--success); color:white; width:24px; height:24px; border:none; border-radius:50%; font-weight:bold; cursor:pointer;" onclick="ubahQtyDariStruk(${i}, 1)">+</button></div><span style="font-size:14px; font-weight:700; color:var(--text-main);">${escapeHTML(p.nama)}</span></div><span style="font-weight:900; color:var(--primary); font-size:15px;">${sub.toLocaleString('id-ID')}</span></div>`;
+        keranjang.forEach((p, i) => { let sub = parseInt(p.subtotal) || 0; totalSemua += sub;
+            tempHTML += `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px dashed #e2e8f0;">
+                <div style="display:flex; align-items:center; gap:10px;"><button style="background:var(--danger); color:white; width:24px; height:24px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="hapusDariStruk(${i})">✖</button>
+                    <div style="display:flex; align-items:center; background:#f1f5f9; border-radius:20px; padding:2px; border:1px solid #e2e8f0;"><button style="background:var(--danger); color:white; width:24px; height:24px; border:none; border-radius:50%; font-weight:bold; cursor:pointer;" onclick="ubahQtyDariStruk(${i}, -1)">-</button><span style="font-size:13px; font-weight:bold; min-width:24px; text-align:center; color:var(--text-main);">${p.qty}</span><button style="background:var(--success); color:white; width:24px; height:24px; border:none; border-radius:50%; font-weight:bold; cursor:pointer;" onclick="ubahQtyDariStruk(${i}, 1)">+</button></div><span style="font-size:14px; font-weight:700; color:var(--text-main);">${escapeHTML(p.nama)}</span>
+                </div><span style="font-weight:900; color:var(--primary); font-size:15px;">${sub.toLocaleString('id-ID')}</span></div>`;
         });
-        ds.innerHTML = tempHTML; document.getElementById('teksTotal').innerText = totalSemua.toLocaleString('id-ID'); hitungKembalian();
+        ds.innerHTML = tempHTML; let tT = document.getElementById('teksTotal'); if(tT) tT.innerText = totalSemua.toLocaleString('id-ID'); hitungKembalian();
     }
     
     function hitungKembalian() {
-        const u = parseInt(document.getElementById('inputUang').value.replace(/[^0-9]/g, '')) || 0; const t = document.getElementById('teksKembalian');
+        let elInput = document.getElementById('inputUang'); if(!elInput) return;
+        const u = parseInt(elInput.value.replace(/[^0-9]/g, '')) || 0; const t = document.getElementById('teksKembalian'); if(!t) return;
         if (u === 0 || totalSemua === 0) { t.innerText = "Rp 0"; t.style.color = "var(--text-main)"; }
         else { const k = u - totalSemua; if(k < 0) { t.innerText = "KURANG UANG Rp " + Math.abs(k).toLocaleString('id-ID'); t.style.color = "var(--danger)"; } else { t.innerText = "Rp " + k.toLocaleString('id-ID'); t.style.color = "var(--success)"; } }
     }
 
     async function triggerTransaksi(jenis) {
         if (isUI_Locked) return; if (keranjang.length === 0) return Swal.fire({title: "Kosong!", text:"Pilih barang dulu.", icon:"warning", confirmButtonColor: "#4361ee"});
-        isUI_Locked = true; let btns = document.querySelectorAll('.btn-action-kasir'); btns.forEach(b => b.style.pointerEvents = 'none');
-        try { await selesaikanTransaksiCore(jenis); } catch(e) { console.error(e); } finally { isUI_Locked = false; btns.forEach(b => b.style.pointerEvents = 'auto'); }
+        isUI_Locked = true; let btns = document.querySelectorAll('.btn-action-kasir'); btns.forEach(b => { b.style.pointerEvents = 'none'; b.style.opacity = '0.5'; });
+        try { await selesaikanTransaksiCore(jenis); } catch(e) { console.error(e); } finally { isUI_Locked = false; btns.forEach(b => { b.style.pointerEvents = 'auto'; b.style.opacity = '1'; }); }
     }
 
     async function selesaikanTransaksiCore(jenis) {
-        let u = parseInt(document.getElementById('inputUang').value.replace(/[^0-9]/g, '')) || 0; let b = keranjang.map(p => `${p.nama} (${p.qty})`).join(" • "); let kembali = 0; let tambahKeLaci = 0; let uangMasuk = 0; let kembalianKurang = 0; let tipMutlak = 0; let jenisUtamaUntukLog = jenis;
+        let elInput = document.getElementById('inputUang'); let u = parseInt(elInput.value.replace(/[^0-9]/g, '')) || 0; 
+        let b = keranjang.map(p => `${p.nama} (${p.qty})`).join(" • "); 
+        let kembali = 0; let tambahKeLaci = 0; let uangMasuk = 0; let kembalianKurang = 0; let jenisUtamaUntukLog = jenis; let tipMutlak = 0;
+
         if (jenis === 'lunas') {
             if (u < totalSemua) return Swal.fire({title: "Uang Kurang!", text:"Uang tunai pelanggan tidak cukup.", icon:"error", confirmButtonColor: "#4361ee"});
-            kembali = u - totalSemua; tambahKeLaci = totalSemua; uangMasuk = totalSemua;
+            
+            // FITUR BARU: PROTEKSI LACI KOSONG AGAR TIDAK MINUS
+            let cekKembalian = u - totalSemua;
+            if (cekKembalian > uangLaciGlobal) {
+                return Swal.fire({ title: "Laci Fisik Tidak Cukup!", html: `Kembalian pelanggan: <b>Rp ${cekKembalian.toLocaleString('id-ID')}</b><br>Uang di Laci Kasir: <b>Rp ${uangLaciGlobal.toLocaleString('id-ID')}</b><br><br><small style="color:red;">Laci tidak boleh minus. Silakan Tambah Modal dulu, atau sarankan pelanggan untuk Titip Kembalian (Pakai tombol HUTANG).</small>`, icon: "error", confirmButtonColor: "#dc3545" });
+            }
+            kembali = cekKembalian; tambahKeLaci = totalSemua; uangMasuk = totalSemua;
         } else if (jenis === 'cashless') {
             const { value: m } = await Swal.fire({ title: 'Transfer Via Apa?', input: 'select', inputOptions: {'QRIS':'QRIS', 'DANA':'DANA', 'Transfer Bank':'Transfer Bank', 'Lainnya':'Lainnya'}, showCancelButton: true, confirmButtonColor: '#4361ee' });
             if (!m) return; b += `\n[INFO:INFO:CASHLESS (${m})]`; u = totalSemua; kembali = 0; tambahKeLaci = 0; uangMasuk = totalSemua; 
         } else if (jenis === 'hutang') {
-            if (u === totalSemua) {
-                return Swal.fire({title: "Uang Sudah Pas!", text: "Nominal pas. Gunakan tombol BAYAR TUNAI atau CASHLESS.", icon: "warning", confirmButtonColor: "#f59e0b"});
-            } else if (u > totalSemua) {
+            if (u === totalSemua) { return Swal.fire({title: "Uang Sudah Pas!", text: "Nominal uang pembeli pas dengan tagihan. Tolong gunakan tombol BAYAR TUNAI atau CASHLESS.", icon: "warning", confirmButtonColor: "#f59e0b"}); } 
+            else if (u > totalSemua) {
                 let kembalianSeharusnya = u - totalSemua;
-                const { value: kDiberikanStr } = await Swal.fire({ title: 'Kembalian Kurang?', html: `Seharusnya kembali <b>Rp ${kembalianSeharusnya.toLocaleString('id-ID')}</b>.<br>Berapa yang bisa dikasih sekarang? (Ketik 0 jika kosong)`, input: 'text', inputAttributes: { inputmode: 'numeric', oninput: 'formatUangLokal(this)' }, showCancelButton: true, confirmButtonColor: '#4361ee' });
+                const { value: kDiberikanStr } = await Swal.fire({ title: 'Kembalian Kurang?', html: `Seharusnya kembali <b>Rp ${kembalianSeharusnya.toLocaleString('id-ID')}</b>.<br>Berapa kembalian yang bisa Anda kasih saat ini? (Ketik 0 jika kosong)`, input: 'text', inputAttributes: { inputmode: 'numeric', oninput: 'formatUangLokal(this)' }, showCancelButton: true, confirmButtonColor: '#4361ee' });
                 if (kDiberikanStr === undefined) return; let kDiberikan = parseInt(kDiberikanStr.replace(/[^0-9]/g, '')) || 0;
-                if (kDiberikan > kembalianSeharusnya) return Swal.fire("Error", "Melebihi total kembalian!", "error"); if (kDiberikan === kembalianSeharusnya) return Swal.fire("Lho", "Kembalian cukup, pakai BAYAR TUNAI saja.", "info");
+                if (kDiberikan > kembalianSeharusnya) return Swal.fire("Error", "Uang yang diberikan tidak boleh melebihi total kembalian yang seharusnya!", "error");
+                
+                // PROTEKSI LACI SAAT NGUTANG KEMBALIAN SEBAGIAN
+                if (kDiberikan > uangLaciGlobal) return Swal.fire("Laci Fisik Tidak Cukup!", `Uang di Laci Kasir cuma Rp ${uangLaciGlobal.toLocaleString('id-ID')}. Anda tidak bisa memberi kembalian tunai Rp ${kDiberikan.toLocaleString('id-ID')}!`, "error");
+                if (kDiberikan === kembalianSeharusnya) return Swal.fire("Lho", "Kembaliannya cukup, pakai tombol BAYAR TUNAI saja ya.", "info");
                 
                 let sisaKurang = kembalianSeharusnya - kDiberikan; 
-                const { value: opsi } = await Swal.fire({ title: `Sisa Kurang Rp ${sisaKurang.toLocaleString('id-ID')}`, text: 'Sisa uang ini mau dicatat sebagai?', input: 'select', inputOptions: { 'hutang': 'Toko Ngutang ke Pelanggan', 'ikhlas': 'Diikhlaskan (Masuk Tip Murni)' }, showCancelButton: true, confirmButtonColor: '#4361ee' });
+                const { value: opsi } = await Swal.fire({ title: `Sisa Kurang Rp ${sisaKurang.toLocaleString('id-ID')}`, text: 'Sisa uang ini mau dicatat sebagai?', input: 'select', inputOptions: { 'hutang': 'Toko Ngutang ke Pelanggan', 'ikhlas': 'Diikhlaskan (Masuk Tip/Kas)' }, showCancelButton: true, confirmButtonColor: '#4361ee' });
                 if (!opsi) return;
+
                 const { value: n } = await Swal.fire({ title: 'Nama Pelanggan', input: 'text', showCancelButton: true, confirmButtonColor: '#4361ee' });
                 if (!n || String(n).trim() === "") return; let namaPel = String(n).trim();
-
                 tambahKeLaci = u - kDiberikan; uangMasuk = u - kDiberikan; kembali = kDiberikan;
 
-                if (opsi === 'hutang') { jenis = 'hutang'; jenisUtamaUntukLog = "TOKO NGUTANG"; kembalianKurang = sisaKurang; b += `\n[INFO:DANGER:KEMBALIAN KURANG] ke: ${namaPel}\n[INFO:MUTED:Diterima: Rp ${u.toLocaleString('id-ID')} | Sisa: Rp ${sisaKurang.toLocaleString('id-ID')}]`; amanPush('warung/hutang', { nama: "Toko Ngutang Ke: " + namaPel, waktu: new Date().toLocaleDateString('id-ID') + " " + new Date().toLocaleTimeString('id-ID'), barang: "Sisa kembalian yang belum dikasih", total: sisaKurang }, 'hutang'); } 
-                else if (opsi === 'ikhlas') { jenis = 'tip'; jenisUtamaUntukLog = "DAPAT TIP"; tipMutlak = sisaKurang; b += `\n[INFO:SUCCESS:IKHLAS / TIP MURNI] dari: ${namaPel}\n[INFO:MUTED:Tip: Rp ${tipMutlak.toLocaleString('id-ID')}]`; }
+                if (opsi === 'hutang') {
+                    jenis = 'hutang'; jenisUtamaUntukLog = "TOKO NGUTANG"; kembalianKurang = sisaKurang;
+                    b += `\n[INFO:DANGER:KEMBALIAN KURANG] ke: ${namaPel}\n[INFO:MUTED:Diterima: Rp ${u.toLocaleString('id-ID')} | Sisa: Rp ${sisaKurang.toLocaleString('id-ID')}]`;
+                    amanPush('warung/hutang', { nama: "Toko Ngutang Ke: " + namaPel, waktu: new Date().toLocaleDateString('id-ID') + " " + new Date().toLocaleTimeString('id-ID'), barang: "Sisa kembalian yang belum dikasih", total: sisaKurang }, 'hutang');
+                } else if (opsi === 'ikhlas') {
+                    jenis = 'tip'; jenisUtamaUntukLog = "DAPAT TIP"; tipMutlak = sisaKurang;
+                    b += `\n[INFO:SUCCESS:IKHLAS / TIP] dari: ${namaPel}\n[INFO:MUTED:Extra Masuk: Rp ${sisaKurang.toLocaleString('id-ID')}]`;
+                }
             } else {
-                const { value: n } = await Swal.fire({ title: 'Nama Pelanggan', input: 'text', inputPlaceholder: 'Ketik nama...', showCancelButton: true, confirmButtonColor: '#4361ee' });
+                const { value: n } = await Swal.fire({ title: 'Nama Pelanggan', input: 'text', inputPlaceholder: 'Ketik nama yang ngutang...', showCancelButton: true, confirmButtonColor: '#4361ee' });
                 if (!n || String(n).trim()==="") return; let namaPel = String(n).trim();
                 let sisaHutang = totalSemua - u; tambahKeLaci = u; uangMasuk = u; kembali = 0;
                 if (u === 0) { b += `\n[INFO:WARNING:HUTANG FULL: ${namaPel}]`; } else { b += `\n[INFO:WARNING:DP Rp ${u.toLocaleString('id-ID')} | SISA KURANG: Rp ${sisaHutang.toLocaleString('id-ID')} ke ${namaPel}]`; }
@@ -620,8 +910,9 @@
 
         amanPush('warung/history', { waktu: new Date().toLocaleTimeString('id-ID'), kasir: namaKasirAktif, barang: b, total: totalSemua, bayar: u, kembali: kembali, jenis: jenis, uangMasuk: uangMasuk, kembalianKurang: kembalianKurang, nilaiTipMurni: tipMutlak, masukLaci: tambahKeLaci }, 'history');
         if (tambahKeLaci !== 0) amanTambahUang('warung/pendapatan', tambahKeLaci);
-        catatLogAktivitas(`TRANSAKSI ${jenisUtamaUntukLog.toUpperCase()}`, `Total Penjualan: Rp ${totalSemua.toLocaleString('id-ID')}`);
-        keranjang = []; simpanKeranjang(); document.getElementById('inputUang').value = ''; renderStruk(); document.querySelectorAll('.qty-num').forEach(el => el.innerText = "0"); Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Transaksi Sukses!', showConfirmButton: false, timer: 1500 });
+        catatLogAktivitas(`TRANSAKSI ${jenisUtamaUntukLog.toUpperCase()}`, `Rp ${totalSemua.toLocaleString('id-ID')}`);
+        keranjang = []; simpanKeranjang(); elInput.value = ''; renderStruk(); document.querySelectorAll('.qty-num').forEach(el => el.innerText = "0"); 
+        if(typeof Swal.fire === 'function') Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Transaksi Sukses!', showConfirmButton: false, timer: 1500 });
     }
 
     async function catatPengeluaran() {
@@ -630,32 +921,122 @@
             const { value: k } = await Swal.fire({ title: 'Kas Keluar', input: 'text', inputPlaceholder: 'Cth: Beli Es Batu', showCancelButton: true, confirmButtonColor: '#4361ee' });
             if (!k || String(k).trim()==="") return;
             const { value: n } = await Swal.fire({ title: 'Harga Beli?', input: 'text', inputAttributes: { inputmode: 'numeric', oninput: 'formatUangLokal(this)' }, showCancelButton: true, confirmButtonColor: '#4361ee' });
-            if (!n) return; let nom = parseInt(n.replace(/[^0-9]/g, ''));
-            if (isNaN(nom) || nom <= 0) return Swal.fire('Error', 'Harga beli tidak valid!', 'error');
+            if (n === undefined || n === "") return; let nom = parseInt(n.replace(/[^0-9]/g, '')); if (isNaN(nom) || nom <= 0) return Swal.fire('Error', 'Harga beli tidak valid!', 'error');
 
-            if (nom > uangLaciGlobal) { const conf = await Swal.fire({ title: 'Isi Laci Kurang!', text: `Pengeluaran (Rp ${nom.toLocaleString('id-ID')}) lebih besar dari laci (Rp ${uangLaciGlobal.toLocaleString('id-ID')}). Tetap catat?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545' }); if (!conf.isConfirmed) return; }
+            if (nom > uangLaciGlobal) {
+                const conf = await Swal.fire({ title: 'Isi Laci Kurang!', text: `Pengeluaran (Rp ${nom.toLocaleString('id-ID')}) lebih besar dari laci (Rp ${uangLaciGlobal.toLocaleString('id-ID')}). Tetap catat?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545' });
+                if (!conf.isConfirmed) return;
+            }
             
             amanPush('warung/history', { waktu: new Date().toLocaleTimeString('id-ID'), kasir: namaKasirAktif, barang: `[INFO:DANGER:KAS KELUAR]\n${String(k).trim()}`, total: nom, bayar: nom, kembali: 0, jenis: 'pengeluaran', uangMasuk: 0, masukLaci: -nom }, 'history');
-            amanKurangUang('warung/pendapatan', nom); catatLogAktivitas("PENGELUARAN", `Rp ${nom.toLocaleString('id-ID')} (${String(k).trim()})`); Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Uang Ditarik', showConfirmButton: false, timer: 1500});
+            amanKurangUang('warung/pendapatan', nom); catatLogAktivitas("PENGELUARAN", `Rp ${nom.toLocaleString('id-ID')} (${String(k).trim()})`);
+            if(typeof Swal.fire === 'function') Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Uang Ditarik', showConfirmButton: false, timer: 1500});
+        } finally { isUI_Locked = false; }
+    }
+    
+    async function tambahModalLaci() {
+        if (isUI_Locked) return; isUI_Locked = true;
+        try {
+            const { value: nominalStr } = await Swal.fire({ title: 'Tambah Modal Laci', html: 'Masukkan jumlah uang fisik yang dimasukkan ke laci:', input: 'text', inputAttributes: { inputmode: 'numeric', oninput: 'formatUangLokal(this)' }, showCancelButton: true, confirmButtonColor: '#10b981' });
+            if (nominalStr === undefined || nominalStr === "") return; let nom = parseInt(nominalStr.replace(/[^0-9]/g, '')); if (isNaN(nom) || nom <= 0) return Swal.fire('Error', 'Nominal tidak valid!', 'error');
+
+            const { value: ket } = await Swal.fire({ title: 'Keterangan Modal', input: 'text', inputValue: 'Tambah Uang Receh', showCancelButton: true, confirmButtonColor: '#10b981' });
+            if (ket === undefined) return; let catatan = ket ? String(ket).trim() : "Modal Laci Tambahan";
+
+            let txt = `[INFO:SUCCESS:TAMBAH MODAL]\n${catatan}`;
+            // MENGGUNAKAN JENIS 'tambah_modal' AGAR BISA DIBEDAKAN DARI 'modal' (Modal Awal)
+            amanPush('warung/history', { waktu: new Date().toLocaleTimeString('id-ID'), kasir: namaKasirAktif, barang: txt, total: nom, bayar: nom, kembali: 0, jenis: 'tambah_modal', uangMasuk: nom, masukLaci: nom }, 'history');
+            amanTambahUang('warung/pendapatan', nom); catatLogAktivitas("TAMBAH MODAL", `Rp ${nom.toLocaleString('id-ID')} (${catatan})`);
+            Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Modal Ditambahkan', showConfirmButton: false, timer: 1500});
         } finally { isUI_Locked = false; }
     }
 
     async function resetHistorySaja() {
-        if(isUI_Locked) return; if (Object.keys(historyDataMentah).length === 0) return Swal.fire("Kosong", "Belum ada riwayat hari ini.", "info");
-        isUI_Locked = true;
+        if(isUI_Locked) return; if (Object.keys(historyDataMentah).length === 0) return Swal.fire("Kosong", "Belum ada riwayat transaksi hari ini.", "info"); isUI_Locked = true;
         try {
-            const resDownload = await Swal.fire({ title: 'Tutup Buku Harian', text: "Download Laporan Transparan dulu sebelum ditutup?", icon: 'question', showCancelButton: true, confirmButtonText: 'Ya, Download', cancelButtonText: 'Tidak Usah', confirmButtonColor: '#10b981' });
+            const resDownload = await Swal.fire({ title: 'Tutup Buku Harian', text: "Apakah Anda ingin mengunduh Laporan Transparan hari ini sebelum ditutup?", icon: 'question', showCancelButton: true, confirmButtonText: 'Ya, Download', cancelButtonText: 'Tidak Usah', confirmButtonColor: '#10b981' });
             if(resDownload.isConfirmed) { downloadLaporan(); }
 
-            const { value: sisaKasStr } = await Swal.fire({ title: 'Sisa Modal Laci Besok', html: `Uang laci saat ini: <b>Rp ${uangLaciGlobal.toLocaleString('id-ID')}</b><br><br>Berapa sisa modal uang yang ditinggalkan di laci untuk besok?`, input: 'text', inputValue: '0', inputAttributes: { inputmode: 'numeric', oninput: 'formatUangLokal(this)' }, showCancelButton: true, confirmButtonText: 'Tutup Buku Sekarang', confirmButtonColor: '#dc3545' });
+            const { value: sisaKasStr } = await Swal.fire({ title: 'Setor Tunai & Modal Besok', html: `Uang di laci fisik saat ini: <b>Rp ${uangLaciGlobal.toLocaleString('id-ID')}</b><br><br>Berapa sisa uang yang ingin ditinggalkan di laci untuk modal besok?`, input: 'text', inputValue: '0', inputAttributes: { inputmode: 'numeric', oninput: 'formatUangLokal(this)' }, showCancelButton: true, confirmButtonText: 'Tutup Buku Sekarang', confirmButtonColor: '#dc3545' });
             if (sisaKasStr === undefined) return; let sisaKas = parseInt(sisaKasStr.replace(/[^0-9]/g, '')) || 0; if (sisaKas < 0) sisaKas = 0;
-            if (sisaKas > uangLaciGlobal) return Swal.fire("Peringatan!", "Sisa laci lebih besar dari isi laci saat ini!", "error");
+            if (sisaKas > uangLaciGlobal) return Swal.fire("Peringatan!", `Sisa laci yang diketik (Rp ${sisaKas.toLocaleString('id-ID')}) lebih besar dari isi laci saat ini. Silakan ulangi.`, "error");
 
-            let disetor = uangLaciGlobal - sisaKas; amanHapus('warung/history', 'history', ''); amanSetData('warung/pendapatan', sisaKas, 'pendapatan', ''); 
-            catatLogAktivitas("TUTUP BUKU", `Setor: Rp ${disetor.toLocaleString('id-ID')} | Sisa Laci: Rp ${sisaKas.toLocaleString('id-ID')}`); Swal.fire('Tutup Buku Sukses!', `Riwayat direset.<br>Modal laci besok: <b>Rp ${sisaKas.toLocaleString('id-ID')}</b>`, 'success'); 
+            let disetor = uangLaciGlobal - sisaKas; amanHapus('warung/history', 'history', ''); amanSetUangAtauPin('warung/pendapatan', sisaKas); 
+            catatLogAktivitas("TUTUP BUKU", `Disetor: Rp ${disetor.toLocaleString('id-ID')} | Sisa Laci Besok: Rp ${sisaKas.toLocaleString('id-ID')}`); 
+            if(typeof Swal.fire === 'function') Swal.fire('Tutup Buku Sukses!', `Riwayat penjualan telah direset.<br>Modal laci untuk besok: <b>Rp ${sisaKas.toLocaleString('id-ID')}</b>`, 'success'); 
         } finally { isUI_Locked = false; }
     }
 
+    async function resetUangSaja() {
+        if(isUI_Locked) return; isUI_Locked = true;
+        try {
+            const res = await Swal.fire({ title: 'Kosongkan Laci Fisik?', text: "Uang laci akan ditarik jadi Rp 0.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545' });
+            if(res.isConfirmed) { amanSetUangAtauPin('warung/pendapatan', 0); catatLogAktivitas("RESET LACI", "Fisik laci ditarik jadi 0"); if(typeof Swal.fire === 'function') Swal.fire('Sukses', 'Laci fisik sudah kosong.', 'success'); }
+        } finally { isUI_Locked = false; }
+    }
+
+    // PEMISAHAN MODAL AWAL DAN TAMBAH MODAL DI FORENSIK LACI
+    function lihatRincianLaci() {
+        let hitunganAsliSistem = rekapAkuntansiGlobal.modalAwalMasuk + rekapAkuntansiGlobal.tambahModalMasuk + rekapAkuntansiGlobal.tunaiMasuk + rekapAkuntansiGlobal.nyangkutMasuk - rekapAkuntansiGlobal.kasKeluar - rekapAkuntansiGlobal.kembalianKeluar;
+        let selisih = uangLaciGlobal - hitunganAsliSistem; let infoSelisihHTML = '';
+        if (selisih !== 0) { infoSelisihHTML = `<div style="background:#fef2f2; border:1px solid #ef4444; padding:10px; border-radius:8px; margin-top:15px; color:#b91c1c;"><b style="font-size:14px;">⚠️ TERDETEKSI SELISIH LACI</b><br>Laci tercatat: Rp ${uangLaciGlobal.toLocaleString('id-ID')}<br>Seharusnya: Rp ${hitunganAsliSistem.toLocaleString('id-ID')}<br><b>Selisih Rp ${selisih.toLocaleString('id-ID')}</b>.<br><span style="font-size:10px;">Bisa terjadi karena transaksi offline belum tersinkron, ubah laci manual, atau ada data terhapus tanpa potong laci.</span></div>`; }
+
+        Swal.fire({
+            title: 'Forensik Laci (Tunai Fisik)',
+            html: `<div class="modal-rincian-isi"><p>Matematika Uang Kertas & Koin di Kotak Kasir (Tidak termasuk QRIS/Transfer):</p>
+            <div class="math-block">
+                <div class="math-line"><span>[+] Modal Awal Laci</span><span>Rp ${rekapAkuntansiGlobal.modalAwalMasuk.toLocaleString('id-ID')}</span></div>
+                <div class="math-line"><span>[+] Tambah Uang Receh</span><span>Rp ${rekapAkuntansiGlobal.tambahModalMasuk.toLocaleString('id-ID')}</span></div>
+                <div class="math-line"><span>[+] Omzet Tunai & Tip</span><span>Rp ${rekapAkuntansiGlobal.tunaiMasuk.toLocaleString('id-ID')}</span></div>
+                <div class="math-line"><span>[+] Titipan (Kembalian Kurang)</span><span>Rp ${rekapAkuntansiGlobal.nyangkutMasuk.toLocaleString('id-ID')}</span></div>
+                <div class="math-line" style="color:var(--danger)"><span>[-] Kas Keluar Belanja</span><span>- Rp ${rekapAkuntansiGlobal.kasKeluar.toLocaleString('id-ID')}</span></div>
+                <div class="math-line" style="color:var(--danger)"><span>[-] Lunasi Kembalian</span><span>- Rp ${rekapAkuntansiGlobal.kembalianKeluar.toLocaleString('id-ID')}</span></div>
+                <div class="math-line result"><span>TOTAL SEHARUSNYA</span><span>Rp ${hitunganAsliSistem.toLocaleString('id-ID')}</span></div>
+            </div>
+            ${infoSelisihHTML}</div>`, confirmButtonColor: '#4361ee'
+        });
+    }
+
+    function lihatRincianPendapatan() {
+        Swal.fire({
+            title: 'Forensik Laba Bersih',
+            html: `<div class="modal-rincian-isi"><p>Hitungan Laba Mutlak (Hak Milik Warung). Gabungan uang Tunai & Cashless.</p>
+            <div class="math-block">
+                <div class="math-line"><span>[+] Penjualan (Lunas/DP)</span><span>Rp ${rekapAkuntansiGlobal.omzet.toLocaleString('id-ID')}</span></div>
+                <div class="math-line"><span>[+] Pelunasan Piutang</span><span>Rp ${rekapAkuntansiGlobal.pelunasan.toLocaleString('id-ID')}</span></div>
+                <div class="math-line"><span>[+] Uang Tip / Ikhlas</span><span>Rp ${rekapAkuntansiGlobal.tip.toLocaleString('id-ID')}</span></div>
+                <div class="math-line" style="color:var(--danger)"><span>[-] Kas Keluar Belanja</span><span>- Rp ${rekapAkuntansiGlobal.keluar.toLocaleString('id-ID')}</span></div>
+                <div class="math-line result"><span>PENDAPATAN BERSIH</span><span>Rp ${rekapAkuntansiGlobal.bersih.toLocaleString('id-ID')}</span></div>
+            </div>
+            <div class="info-box"><b>Kenapa Uang Titipan tidak ada di sini?</b><br>Uang kembalian yang belum dikasih ke pelanggan (Hutang Toko) statusnya adalah UANG TITIPAN. Uang itu numpang di Laci Fisik, tapi <b>bukan milik warung</b> sehingga tidak dihitung Laba. Modal laci juga bukan Laba.</div></div>`, confirmButtonColor: '#10b981'
+        });
+    }
+
+    function lihatBedaLaciLaba() {
+        Swal.fire({
+            title: '⚖️ Kenapa Angkanya Beda?',
+            html: `<div class="modal-rincian-isi" style="font-size:12px; line-height:1.5;"><p>Sering bingung kenapa Uang di Laci dan Angka Laba Bersih tidak sama? Ini penjelasannya:</p>
+                <div style="background:#eff6ff; padding:10px; border-radius:8px; border:1px solid #bfdbfe; margin-bottom:10px;"><b style="color:var(--primary); font-size:14px;">1. UANG LACI FISIK</b><br>Ini adalah uang nyata (kertas/koin) di dalam laci. Uang ini berisi Modal Awal, Uang Kembalian Orang yang masih nyangkut, dan Penjualan Tunai. Di sini <b>tidak ada</b> uang dari QRIS/DANA.</div>
+                <div style="background:#ecfdf5; padding:10px; border-radius:8px; border:1px solid #a7f3d0; margin-bottom:10px;"><b style="color:var(--success); font-size:14px;">2. LABA BERSIH (PENDAPATAN)</b><br>Ini adalah uang hak milik warung seutuhnya dari hasil jualan. Angka ini gabungan dari uang Tunai dan Cashless (Transfer/QRIS). Uang Modal dan Uang Titipan (kembalian kurang) <b>tidak dimasukkan</b> ke sini karena itu bukan keuntungan.</div>
+                <div style="background:#fef2f2; padding:10px; border-radius:8px; border:1px solid #fecaca; color:#991b1b;"><b>Kesimpulan Singkat:</b><br>- Jika ada pembeli bayar pakai QRIS, angka Laba naik tapi Laci Fisik tetap.<br>- Jika kamu masukin Modal 100 ribu, Laci Fisik naik tapi angka Laba tetap.<br>- Jika ada kembalian orang nyangkut, Laci Fisik naik (uangnya di laci), tapi angka Laba tetap (bukan untung).</div>
+            </div>`, confirmButtonColor: '#1f2937', confirmButtonText: 'Paham 👍'
+        });
+    }
+    
+    function lihatBarangTerjualHariIni() {
+        let htmlRekap = ''; let kats = Object.keys(rekapBarangTerjualHariIni).sort();
+        if (kats.length === 0) { htmlRekap = '<div style="text-align:center; padding:15px; color:var(--text-muted); font-size:13px;">Belum ada barang terjual hari ini.</div>'; } 
+        else {
+            htmlRekap += '<div style="text-align:left; font-size:13px;">';
+            kats.forEach(kat => { 
+                htmlRekap += `<div style="background:${getWarnaKategori(kat)}; color:white; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:bold; margin:10px 0 5px 0; display:inline-block;">${escapeHTML(kat)}</div>`; 
+                for (let b in rekapBarangTerjualHariIni[kat]) { htmlRekap += `<div style="display:flex; justify-content:space-between; border-bottom:1px dashed #e2e8f0; padding:6px 0;"><span>${escapeHTML(b)}</span><span style="font-weight:bold; color:var(--primary);">${rekapBarangTerjualHariIni[kat][b]}</span></div>`; } 
+            }); htmlRekap += '</div>';
+        }
+        Swal.fire({ title: '📦 Rincian Penjualan', html: htmlRekap, confirmButtonColor: '#4361ee' });
+    }
+
+    // PERBAIKAN BUG PEMBACAAN PAKET (AYAM+NASI)
     function parseBarangHistory(str) {
         if(!str) return ''; let lines = str.split('\n'); let html = '';
         lines.forEach(line => {
@@ -668,181 +1049,446 @@
 
     function executeRenderHistoryDanRekap() {
         const container = document.getElementById('containerHistory'); const containerRekap = document.getElementById('containerRekap');
-        let rekapKategori = {}; let omzet = 0; let tip = 0; let pengeluaran = 0; let tokoNgutang = 0; let uangMasukPelunasan = 0; let totalCashless = 0; let bayarKembalian = 0; let modalMasuk = 0; let adaRiwayat = false; let tMasuk = 0; let cMasuk = 0; let nMasuk = 0; let kKeluar = 0; let kembalianKeluar = 0; let histHTML = '';
+        if(!container) return;
+        
+        let rekapKategori = {}; let omzet = 0; let tip = 0; let pengeluaran = 0; let tokoNgutang = 0; let uangMasukPelunasan = 0; let totalCashless = 0; let bayarKembalian = 0; 
+        let m_awal = 0; let m_tambah = 0;
+        let adaRiwayat = false; let tMasuk = 0; let cMasuk = 0; let nMasuk = 0; let kKeluar = 0; let kembalianKeluar = 0;
+        let histHTML = '';
 
         Object.keys(historyDataMentah).reverse().forEach(key => {
             const h = historyDataMentah[key]; if(!h || typeof h.barang !== 'string') return;
-            adaRiwayat = true; const safeKey = escapeHTML(key.replace(/[^a-zA-Z0-9]/g, '')); const rawKey = escapeJSParam(key); 
-            
-            let j = h.jenis || 'lunas'; let tot = parseInt(h.total) || 0; let byr = parseInt(h.bayar) || 0; let kbl = parseInt(h.kembali) || 0; let uM = h.uangMasuk !== undefined ? parseInt(h.uangMasuk) : (j === 'hutang' ? 0 : tot); let kemKurang = parseInt(h.kembalianKurang) || 0; let tipMurni = parseInt(h.nilaiTipMurni) || 0; let isCashless = h.barang.includes('CASHLESS');
+            adaRiwayat = true;
+            const safeKey = escapeHTML(key.replace(/[^a-zA-Z0-9]/g, '')); const rawKey = escapeJSParam(key); 
+            let j = h.jenis || 'lunas'; let tot = parseInt(h.total) || 0; let byr = parseInt(h.bayar) || 0; let kbl = parseInt(h.kembali) || 0;
+            let uM = h.uangMasuk !== undefined ? parseInt(h.uangMasuk) : (j === 'hutang' ? 0 : tot); 
+            let kemKurang = parseInt(h.kembalianKurang) || 0; let tipMurni = parseInt(h.nilaiTipMurni) || 0;
+            let isCashless = h.barang.includes('CASHLESS');
 
-            if (j === 'modal') { modalMasuk += tot; tMasuk += tot; } else if (j === 'lunas') { omzet += tot; tMasuk += tot; } else if (j === 'cashless') { omzet += tot; cMasuk += tot; totalCashless += tot; } else if (j === 'hutang') { if (kemKurang > 0) { omzet += tot; tokoNgutang += kemKurang; nMasuk += kemKurang; tMasuk += (uM - kemKurang); } else { omzet += tot; tMasuk += uM; } } else if (j === 'tip') { omzet += tot; tip += tipMurni; tMasuk += (tot + tipMurni); } else if (j === 'pengeluaran') { pengeluaran += tot; kKeluar += tot; } else if (j === 'bayar_kembalian') { bayarKembalian += tot; if(isCashless) { totalCashless -= tot; } else { kembalianKeluar += tot; } } else if (j === 'bayar_hutang' || j === 'bayar_hutang_cashless') { uangMasukPelunasan += tot; if(isCashless || j === 'bayar_hutang_cashless') { cMasuk += tot; totalCashless += tot; } else { tMasuk += tot; } }
+            // LOGIKA PEMISAHAN MODAL & OMZET YG AKURAT
+            if (j === 'modal') { m_awal += tot; }
+            else if (j === 'tambah_modal') { m_tambah += tot; }
+            else if (j === 'lunas') { omzet += tot; tMasuk += tot; }
+            else if (j === 'cashless') { omzet += tot; cMasuk += tot; totalCashless += tot; }
+            else if (j === 'hutang') { if (kemKurang > 0) { omzet += tot; tokoNgutang += kemKurang; nMasuk += kemKurang; tMasuk += (uM - kemKurang); } else { omzet += tot; tMasuk += uM; } }
+            else if (j === 'tip') { omzet += tot; tip += tipMurni; tMasuk += (tot + tipMurni); }
+            else if (j === 'pengeluaran') { pengeluaran += tot; kKeluar += tot; }
+            else if (j === 'bayar_kembalian') { bayarKembalian += tot; if(isCashless) { totalCashless -= tot; } else { kembalianKeluar += tot; } } 
+            else if (j === 'bayar_hutang' || j === 'bayar_hutang_cashless') { uangMasukPelunasan += tot; if(isCashless || j === 'bayar_hutang_cashless') { cMasuk += tot; totalCashless += tot; } else { tMasuk += tot; } }
             
             let bgC = "var(--success)"; let bgT = "TUNAI"; 
-            if(j==='modal') { bgC = "#10b981"; bgT = "MODAL AWAL"; } else if(j==='cashless' || isCashless) { bgC = "var(--info)"; bgT = "CASHLESS"; } else if(j==='hutang') { bgC = "var(--warning)"; bgT = "HUTANG BARU"; } else if(j==='tip') { bgC = "var(--success)"; bgT = "TIP / IKHLAS"; } else if(j==='konsumsi') { bgC = "var(--text-muted)"; bgT = "PAKAI SENDIRI"; } else if(j==='pengeluaran') { bgC = "var(--danger)"; bgT = "KAS KELUAR"; } else if(j==='bayar_kembalian' || j==='bayar_hutang' || j==='bayar_hutang_cashless') { bgC = "var(--primary-dark)"; bgT = "PELUNASAN"; }
+            if(j==='modal') { bgC = "#10b981"; bgT = "MODAL AWAL"; }
+            else if(j==='tambah_modal') { bgC = "#059669"; bgT = "TAMBAH MODAL"; }
+            else if(j==='cashless' || isCashless) { bgC = "var(--info)"; bgT = "CASHLESS"; }
+            else if(j==='hutang') { bgC = "var(--warning)"; bgT = "HUTANG/DP"; }
+            else if(j==='tip') { bgC = "var(--success)"; bgT = "TIP / IKHLAS"; }
+            else if(j==='konsumsi') { bgC = "var(--text-muted)"; bgT = "PAKAI SENDIRI"; }
+            else if(j==='pengeluaran') { bgC = "var(--danger)"; bgT = "KAS KELUAR"; }
+            else if(j==='bayar_kembalian' || j==='bayar_hutang' || j==='bayar_hutang_cashless') { bgC = "var(--primary-dark)"; bgT = "PELUNASAN"; }
 
-            let nominalTampil = tot; if(j==='tip') nominalTampil = tot + tipMurni; let pref = (j === 'pengeluaran' || j === 'bayar_kembalian') ? "- " : "+ "; if(j === 'hutang' || j === 'konsumsi') pref = "";
+            let nominalTampil = tot; if(j==='tip') nominalTampil = tot + tipMurni;
+            let pref = (j === 'pengeluaran' || j === 'bayar_kembalian') ? "- " : "+ "; if(j === 'hutang' || j === 'konsumsi') pref = "";
 
-            histHTML += `<div class="list-item" style="border-left: 6px solid ${bgC}"><div class="list-header" onclick="toggleDetails('${safeKey}')"><div><div style="font-size:11px; color:var(--text-muted); font-family:monospace; margin-bottom:4px;">${escapeHTML(h.waktu || '')}</div><span class="badge" style="background:${bgC}">${bgT}</span></div><div style="text-align:right;"><span style="font-weight:900; font-size:16px; color:${(j==='pengeluaran' || j==='bayar_kembalian') ? 'var(--danger)' : 'var(--text-main)'}">${pref}Rp ${nominalTampil.toLocaleString('id-ID')}</span><span id="arrow-${safeKey}" style="font-size:10px; color:#cbd5e1; margin-left:8px;">▼</span></div></div><div class="list-details" id="details-${safeKey}"><div style="margin-bottom:15px; font-size:13px; font-weight:600; color:var(--text-main); line-height:1.4;">${parseBarangHistory(h.barang)}</div><button class="btn btn-main" style="background:#fee2e2; color:var(--danger); font-size:12px; padding:10px;" onclick="hapusTransaksi('${rawKey}', ${uM}, '${j}', ${tot})">✖ Buang Transaksi Ini</button></div></div>`;
+            // PENAMBAHAN 'TOTAL TAGIHAN' DI RIWAYAT
+            histHTML += `
+                <div class="list-item" style="border-left: 6px solid ${bgC}">
+                    <div class="list-header" onclick="toggleDetails('${safeKey}')">
+                        <div><div style="font-size:11px; color:var(--text-muted); font-family:monospace; margin-bottom:4px;">${escapeHTML(h.waktu || '')}</div><span class="badge" style="background:${bgC}">${bgT}</span></div>
+                        <div style="text-align:right;"><span style="font-weight:900; font-size:16px; color:${(j==='pengeluaran' || j==='bayar_kembalian') ? 'var(--danger)' : 'var(--text-main)'}">${pref}Rp ${nominalTampil.toLocaleString('id-ID')}</span><span id="arrow-${safeKey}" style="font-size:10px; color:#cbd5e1; margin-left:8px;">▼</span></div>
+                    </div>
+                    <div class="list-details" id="details-${safeKey}">
+                        <div style="font-size:10px; color:var(--primary); font-weight:bold; margin-bottom:8px; display:inline-block; background:#eff6ff; padding:2px 8px; border-radius:4px;">🧑‍💼 Kasir: ${escapeHTML(h.kasir || 'Sistem')}</div>
+                        <div style="margin-bottom:15px; font-size:13px; font-weight:600; color:var(--text-main); line-height:1.4;">${parseBarangHistory(h.barang)}</div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:15px; background:#f8fafc; padding:10px; border-radius:10px; border:1px solid #e2e8f0; text-align:center;">
+                            <div style="border-right:1px solid #e2e8f0;"><span style="font-size:9px; color:var(--text-muted); display:block; font-weight:bold;">TOTAL HARGA</span><b style="color:var(--text-main); font-size:13px;">Rp ${tot.toLocaleString('id-ID')}</b></div>
+                            <div style="border-right:1px solid #e2e8f0;"><span style="font-size:9px; color:var(--text-muted); display:block; font-weight:bold;">DIBAYAR</span><b style="color:var(--success); font-size:13px;">Rp ${byr.toLocaleString('id-ID')}</b></div>
+                            <div><span style="font-size:9px; color:var(--text-muted); display:block; font-weight:bold;">KEMBALIAN</span><b style="color:var(--warning); font-size:13px;">Rp ${kbl.toLocaleString('id-ID')}</b></div>
+                        </div>
+                        <button class="btn btn-main" style="background:#fee2e2; color:var(--danger); font-size:12px; padding:10px;" onclick="hapusTransaksi('${rawKey}', ${uM}, '${j}', ${tot})">✖ Buang Transaksi Ini</button>
+                    </div>
+                </div>`;
                 
-            try { if(j !== 'pengeluaran' && j !== 'bayar_kembalian' && j !== 'bayar_hutang' && j !== 'bayar_hutang_cashless' && j !== 'modal') { let textBiasa = h.barang.replace(/<[^>]*>/g, ' ').replace(/\[INFO.*?\]/g, ' '); let parts = textBiasa.split(/•|,|\n/); parts.forEach(i => { let m = i.trim().match(/([^\(\)]+)\s*\((\d+)\)$/); if (m) { let n = m[1].trim(); let q = parseInt(m[2], 10); if(n && q) { let kat = dapatkanKategori(n); if(!rekapKategori[kat]) rekapKategori[kat] = {}; rekapKategori[kat][n] = (rekapKategori[kat][n] || 0) + q; } } }); } } catch(e) {}
+            try {
+                if(!['pengeluaran', 'bayar_kembalian', 'bayar_hutang', 'bayar_hutang_cashless', 'modal', 'tambah_modal'].includes(j)) {
+                    let textBiasa = h.barang.replace(/<[^>]*>/g, ' ').replace(/\[INFO.*?\]/g, ' '); 
+                    let parts = textBiasa.split(' • '); 
+                    parts.forEach(i => { 
+                        let matchKurung = i.match(/\((\d+)\)$/);
+                        if (matchKurung) { 
+                            let q = parseInt(matchKurung[1], 10); 
+                            let n = i.substring(0, i.lastIndexOf('(')).trim(); 
+                            if(n && q) {
+                                let kat = dapatkanKategori(n);
+                                if(!rekapKategori[kat]) rekapKategori[kat] = {};
+                                rekapKategori[kat][n] = (rekapKategori[kat][n] || 0) + q;
+                            }
+                        } 
+                    });
+                }
+            } catch(e) {}
         });
 
-        if(!adaRiwayat) container.innerHTML = '<div style="text-align:center; padding:30px; color:var(--text-muted); font-size:13px; border:1px dashed #cbd5e1;">Kosong.</div>'; else container.innerHTML = histHTML;
+        if(!adaRiwayat) container.innerHTML = '<div style="text-align:center; padding:30px; color:var(--text-muted); font-size:13px; background:white; border-radius:15px; border:1px dashed #cbd5e1;">Belum ada transaksi hari ini.</div>';
+        else container.innerHTML = histHTML;
         
-        let sisaNyangkut = tokoNgutang - bayarKembalian; if (sisaNyangkut < 0) sisaNyangkut = 0; let pendapatanBersih = omzet + uangMasukPelunasan + tip - pengeluaran;
-        rekapAkuntansiGlobal = { omzet: omzet, pelunasan: uangMasukPelunasan, tip: tip, keluar: pengeluaran, ngutang: sisaNyangkut, bersih: pendapatanBersih, cashless: totalCashless, tunaiMasuk: tMasuk, cashlessMasuk: cMasuk, kasKeluar: kKeluar, nyangkutMasuk: nMasuk, kembalianKeluar: kembalianKeluar, modalMasuk: modalMasuk };
+        let sisaNyangkut = tokoNgutang - bayarKembalian; if (sisaNyangkut < 0) sisaNyangkut = 0;
+        let pendapatanBersih = omzet + uangMasukPelunasan + tip - pengeluaran;
+        rekapAkuntansiGlobal = { 
+            omzet: omzet, pelunasan: uangMasukPelunasan, tip: tip, keluar: pengeluaran, ngutang: sisaNyangkut, bersih: pendapatanBersih, cashless: totalCashless, 
+            tunaiMasuk: tMasuk, cashlessMasuk: cMasuk, kasKeluar: kKeluar, nyangkutMasuk: nMasuk, kembalianKeluar: kembalianKeluar, 
+            modalAwalMasuk: m_awal, tambahModalMasuk: m_tambah 
+        };
+        rekapBarangTerjualHariIni = rekapKategori;
 
-        document.getElementById('rekapTotalDuit').innerHTML = `Rp ${pendapatanBersih.toLocaleString('id-ID')}`; document.getElementById('accOmzet').innerText = `Rp ${omzet.toLocaleString('id-ID')}`; document.getElementById('accPelunasan').innerText = `Rp ${uangMasukPelunasan.toLocaleString('id-ID')}`; document.getElementById('accTip').innerText = `Rp ${tip.toLocaleString('id-ID')}`; document.getElementById('accKeluar').innerText = `- Rp ${pengeluaran.toLocaleString('id-ID')}`; document.getElementById('accNgutangBaru').innerText = `Rp ${sisaNyangkut.toLocaleString('id-ID')}`; document.getElementById('teksCashless').innerText = totalCashless.toLocaleString('id-ID');
+        let tDuit = document.getElementById('rekapTotalDuit'); if(tDuit) tDuit.innerHTML = `Rp ${pendapatanBersih.toLocaleString('id-ID')}`;
+        let aOm = document.getElementById('accOmzet'); if(aOm) aOm.innerText = `Rp ${omzet.toLocaleString('id-ID')}`;
+        let aPel = document.getElementById('accPelunasan'); if(aPel) aPel.innerText = `Rp ${uangMasukPelunasan.toLocaleString('id-ID')}`;
+        let aTip = document.getElementById('accTip'); if(aTip) aTip.innerText = `Rp ${tip.toLocaleString('id-ID')}`;
+        let aKel = document.getElementById('accKeluar'); if(aKel) aKel.innerText = `- Rp ${pengeluaran.toLocaleString('id-ID')}`;
+        let aNgut = document.getElementById('accNgutangBaru'); if(aNgut) aNgut.innerText = `Rp ${sisaNyangkut.toLocaleString('id-ID')}`;
+        let aBayK = document.getElementById('accBayarKembalian'); if(aBayK) aBayK.innerText = `Rp ${bayarKembalian.toLocaleString('id-ID')}`;
+        let tCash = document.getElementById('teksCashless'); if(tCash) tCash.innerText = totalCashless.toLocaleString('id-ID');
 
-        let mathString = `<div style="color:var(--text-muted); margin-bottom:5px;"><b>Rumus Pendapatan Bersih:</b></div><div><span style="color:var(--success)">${omzet.toLocaleString('id-ID')}</span> (Omzet) + <span style="color:var(--success)">${uangMasukPelunasan.toLocaleString('id-ID')}</span> (Pelunasan) + <span style="color:var(--success)">${tip.toLocaleString('id-ID')}</span> (Tip) - <span style="color:var(--danger)">${pengeluaran.toLocaleString('id-ID')}</span> (Keluar)</div><div style="border-top:1px solid #e2e8f0; margin:5px 0;"></div><div style="color:var(--primary); font-weight:bold; font-size:14px;">= Rp ${pendapatanBersih.toLocaleString('id-ID')}</div>`; document.getElementById('boxForensikMatematika').innerHTML = mathString;
+        let formula = `<div style="color:var(--text-muted); margin-bottom:5px;"><b>Rumus Pendapatan Bersih:</b></div><div><span style="color:var(--success)">${omzet.toLocaleString('id-ID')}</span> (Omzet) <br>+ <span style="color:var(--success)">${uangMasukPelunasan.toLocaleString('id-ID')}</span> (Pelunasan) <br>+ <span style="color:var(--success)">${tip.toLocaleString('id-ID')}</span> (Tip) <br>- <span style="color:var(--danger)">${pengeluaran.toLocaleString('id-ID')}</span> (Keluar)</div><div style="border-top:1px solid #e2e8f0; margin:5px 0;"></div><div style="color:var(--primary); font-weight:bold; font-size:14px;">= Rp ${pendapatanBersih.toLocaleString('id-ID')}</div>`;
+        let bf = document.getElementById('boxForensikMatematika'); if(bf) bf.innerHTML = formula;
 
-        let htmlRekap = ''; let kats = Object.keys(rekapKategori).sort(); kats.forEach(kat => { htmlRekap += `<div style="background:${getWarnaKategori(kat)}; color:white; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:bold; margin:15px 0 5px 0; display:inline-block;">${escapeHTML(kat)}</div>`; for (let b in rekapKategori[kat]) { htmlRekap += `<div class="rekap-item"><span style="color:var(--text-main);">${escapeHTML(b)}</span><span class="rekap-qty">${rekapKategori[kat][b]}</span></div>`; } }); containerRekap.innerHTML = htmlRekap || '<div style="text-align:center; padding:15px; color:var(--text-muted); font-size:12px;">Kosong.</div>';
-    }
-
-    function toggleDetails(id) { const d = document.getElementById('details-' + id); const a = document.getElementById('arrow-' + id); if (d.style.display === "block") { d.style.display = "none"; a.innerHTML = "▼"; } else { d.style.display = "block"; a.innerHTML = "▲"; } }
-
-    // ==========================================
-    // 1. FORENSIK LABA BERSIH (HAK MILIK WARUNG)
-    // ==========================================
-    function lihatRincianPendapatan() {
-        Swal.fire({
-            title: 'Forensik Laba Bersih',
-            html: `<div class="modal-rincian-isi">
-            <p>Matematika Laba Bersih Mutlak (Tunai + Transfer) hari ini:</p><hr>
-            <div class="row-rinci"><span>[+] Omzet Penjualan (Lunas/DP/Cashless):</span> <span style="color:var(--success);">Rp ${rekapAkuntansiGlobal.omzet.toLocaleString('id-ID')}</span></div>
-            <div class="row-rinci"><span>[+] Pelunasan Piutang Lama:</span> <span style="color:var(--success);">Rp ${rekapAkuntansiGlobal.pelunasan.toLocaleString('id-ID')}</span></div>
-            <div class="row-rinci"><span>[+] Uang Tip / Ikhlas (Murni):</span> <span style="color:var(--success);">Rp ${rekapAkuntansiGlobal.tip.toLocaleString('id-ID')}</span></div>
-            <div class="row-rinci"><span>[-] Kas Keluar Belanja:</span> <span style="color:var(--danger);">Rp ${rekapAkuntansiGlobal.keluar.toLocaleString('id-ID')}</span></div>
-            <hr>
-            <div style="font-family:monospace; background:#f1f5f9; padding:8px; border-radius:6px; margin-bottom:10px; font-size:11px; text-align:center; font-weight:bold; color:var(--text-main);">
-                ${rekapAkuntansiGlobal.omzet} + ${rekapAkuntansiGlobal.pelunasan} + ${rekapAkuntansiGlobal.tip} - ${rekapAkuntansiGlobal.keluar}
-            </div>
-            <div class="row-rinci"><span>= LABA BERSIH:</span> <h2 style="color:var(--success); margin:0;">Rp ${rekapAkuntansiGlobal.bersih.toLocaleString('id-ID')}</h2></div>
-            <small style="color:var(--text-muted); display:block; margin-top:10px; background:#fffbeb; padding:5px; border:1px solid #fde68a; border-radius:4px;">*Catatan: Uang titipan kembalian TIDAK masuk hitungan laba karena itu hak pelanggan, bukan hak warung.</small>
-            </div>`,
-            confirmButtonColor: '#10b981'
+        let htmlRekap = ''; let kats = Object.keys(rekapKategori).sort();
+        kats.forEach(kat => {
+            htmlRekap += `<div style="background:${getWarnaKategori(kat)}; color:white; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:bold; margin:15px 0 5px 0; display:inline-block;">${escapeHTML(kat)}</div>`;
+            for (let b in rekapKategori[kat]) { htmlRekap += `<div class="rekap-item"><span style="color:var(--text-main);">${escapeHTML(b)}</span><span class="rekap-qty">${rekapKategori[kat][b]}</span></div>`; }
         });
+        if(containerRekap) containerRekap.innerHTML = htmlRekap || '<div style="text-align:center; padding:15px; color:var(--text-muted); font-size:12px;">Data item terjual kosong.</div>';
     }
 
-    // ==========================================
-    // 2. FORENSIK LACI FISIK (UANG KERTAS DI KOTAK)
-    // ==========================================
-    function lihatRincianLaci() {
-        Swal.fire({
-            title: 'Forensik Laci Fisik',
-            html: `<div class="modal-rincian-isi">
-            <p>Matematika Pergerakan Uang Kertas & Koin di Kotak Kasir:</p><hr>
-            <div class="row-rinci"><span>[+] Modal Awal / Tambahan:</span> <span style="color:var(--primary);">Rp ${rekapAkuntansiGlobal.modalMasuk.toLocaleString('id-ID')}</span></div>
-            <div class="row-rinci"><span>[+] Uang Tunai Masuk (Omzet & Tip):</span> <span style="color:var(--success);">Rp ${rekapAkuntansiGlobal.tunaiMasuk.toLocaleString('id-ID')}</span></div>
-            <div class="row-rinci"><span>[+] Uang Titipan (Kembalian Kurang):</span> <span style="color:var(--warning);">Rp ${rekapAkuntansiGlobal.nyangkutMasuk.toLocaleString('id-ID')}</span></div>
-            <div class="row-rinci"><span>[-] Kas Keluar Belanja (Tunai):</span> <span style="color:var(--danger);">Rp ${rekapAkuntansiGlobal.kasKeluar.toLocaleString('id-ID')}</span></div>
-            <div class="row-rinci"><span>[-] Pelunasan Titipan (Kasih Kembalian):</span> <span style="color:var(--danger);">Rp ${rekapAkuntansiGlobal.kembalianKeluar.toLocaleString('id-ID')}</span></div>
-            <hr>
-            <div style="font-family:monospace; background:#f1f5f9; padding:8px; border-radius:6px; margin-bottom:10px; font-size:11px; text-align:center; font-weight:bold; color:var(--text-main);">
-                ${rekapAkuntansiGlobal.modalMasuk} + ${rekapAkuntansiGlobal.tunaiMasuk} + ${rekapAkuntansiGlobal.nyangkutMasuk} - ${rekapAkuntansiGlobal.kasKeluar} - ${rekapAkuntansiGlobal.kembalianKeluar}
-            </div>
-            <div class="row-rinci"><span>= TOTAL FISIK HARUSNYA:</span> <h2 style="color:var(--primary); margin:0;">Rp ${uangLaciGlobal.toLocaleString('id-ID')}</h2></div>
-            <small style="color:var(--text-muted); display:block; margin-top:10px; background:#eff6ff; padding:5px; border:1px solid #bfdbfe; border-radius:4px;">*Hitung uang kertasnya. Jika beda dengan Rp ${uangLaciGlobal.toLocaleString('id-ID')}, berarti ada kas/kembalian fisik yang belum diinput ke sistem Aegis.</small>
-            </div>`,
-            confirmButtonColor: '#4361ee'
-        });
-    }
+    function toggleDetails(id) { const d = document.getElementById('details-' + id); const a = document.getElementById('arrow-' + id); if(!d || !a) return; if (d.style.display === "block") { d.style.display = "none"; a.innerHTML = "▼"; } else { d.style.display = "block"; a.innerHTML = "▲"; } }
 
     function executeRenderBukuHutang() {
-        const cont = document.getElementById('containerHutang'); const filter = document.getElementById('cariDaftarHutang').value.toLowerCase(); let ada = false; let htmlHut = '';
+        const cont = document.getElementById('containerHutang'); if(!cont) return;
+        const filter = document.getElementById('cariDaftarHutang')?.value.toLowerCase() || ''; let ada = false; let htmlHut = '';
+
         Object.keys(dataHutangMentah).reverse().forEach(key => {
-            const h = dataHutangMentah[key]; if(!h || typeof h.nama !== 'string') return; const safeNama = escapeHTML(h.nama); const paramNama = escapeJSParam(h.nama); let hTot = parseInt(h.total) || 0;
+            const h = dataHutangMentah[key]; if(!h || typeof h.nama !== 'string') return; 
+            const safeNama = escapeHTML(h.nama); const paramNama = escapeJSParam(h.nama); let hTot = parseInt(h.total) || 0;
             if (h.nama.toLowerCase().includes(filter)) {
-                ada = true; let isHutangToko = h.nama.startsWith("Toko Ngutang"); let bgC = isHutangToko ? "var(--warning)" : "var(--danger)";
-                htmlHut += `<div class="list-item" style="border-left: 6px solid ${bgC}; padding: 15px;"><div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="font-size:15px; font-weight:900;">${isHutangToko ? '🏪' : '👤'} ${safeNama}</span><span style="font-size:10px;">${escapeHTML(h.waktu||'')}</span></div><div style="font-size:12px; margin-bottom:12px;">${parseBarangHistory(h.barang)}</div><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; padding-top:10px; border-top:1px dashed #eee;"><span style="font-size:11px; font-weight:bold;">${isHutangToko ? 'Harus Dikembalikan:' : 'Sisa Tagihan:'}</span><span style="font-size:18px; font-weight:900; color:${bgC};">Rp ${hTot.toLocaleString('id-ID')}</span></div><div style="display:flex; gap:6px;"><button class="btn btn-small" style="flex:2; background:var(--success); color:white;" onclick="lunasiHutang('${key}', '${paramNama}', ${hTot})">💰 Lunas</button><button class="btn btn-small" style="flex:2; background:var(--info); color:white;" onclick="cicilHutang('${key}', '${paramNama}', ${hTot})">💳 Cicil</button><button class="btn btn-small" style="flex:1; background:#f3f4f6; color:var(--danger);" onclick="hapusHutangBatal('${key}', '${paramNama}')">✖</button></div></div>`;
+                ada = true; let isHutangToko = h.nama.startsWith("Toko Ngutang"); let bgC = isHutangToko ? "var(--warning)" : "var(--danger)"; let titleColor = isHutangToko ? "var(--warning)" : "var(--danger)";
+                htmlHut += `<div class="list-item" style="border-left: 6px solid ${bgC};"><div style="padding: 15px;"><div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="font-size:15px; font-weight:900; color:var(--text-main);">${isHutangToko ? '🏪' : '👤'} ${safeNama}</span><span style="font-size:10px; color:var(--text-muted);">${escapeHTML(h.waktu || '')}</span></div><div style="font-size:12px; color:var(--text-muted); margin-bottom:12px; line-height:1.4;">${parseBarangHistory(h.barang)}</div><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; padding-top:10px; border-top:1px dashed #eee;"><span style="font-size:11px; font-weight:bold; color:var(--text-muted);">${isHutangToko ? 'Harus Dikembalikan:' : 'Sisa Tagihan:'}</span><span style="font-size:18px; font-weight:900; color:${titleColor};">Rp ${hTot.toLocaleString('id-ID')}</span></div><div style="display:flex; gap:6px;"><button class="btn btn-small" style="flex:2; background:var(--success); color:white;" onclick="lunasiHutang('${key}', '${paramNama}', ${hTot})">💰 Lunas</button><button class="btn btn-small" style="flex:2; background:var(--info); color:white;" onclick="cicilHutang('${key}', '${paramNama}', ${hTot})">💳 Cicil</button><button class="btn btn-small" style="flex:1; background:#f3f4f6; color:var(--danger);" onclick="hapusHutangBatal('${key}', '${paramNama}')">✖</button></div></div></div>`;
             }
         });
-        cont.innerHTML = ada ? htmlHut : '<div style="text-align:center; padding:20px; font-size: 12px;">Tidak ada hutang aktif.</div>';
+        if(!ada) cont.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted); font-size: 12px;">Tidak ada hutang aktif.</div>'; else cont.innerHTML = htmlHut;
+    }
+
+    function extractNamaHutang(rawStr) {
+        if(rawStr.includes('KE:')) return rawStr.split('KE:')[1].split('\n')[0].replace(']','').trim();
+        if(rawStr.includes('HUTANG (CICIL):')) return rawStr.split('HUTANG (CICIL):')[1].split('\n')[0].replace(']','').trim();
+        if(rawStr.includes('HUTANG:')) return rawStr.split('HUTANG:')[1].split('\n')[0].replace(']','').trim(); return "Pelanggan";
     }
 
     async function lunasiHutang(key, nama, total) {
         if(isUI_Locked) return; isUI_Locked = true;
         try {
-            const { value: m } = await Swal.fire({ title: `Pelunasan`, text: `Terima lunas Rp ${total.toLocaleString('id-ID')}?`, input: 'select', inputOptions: { 'Tunai': 'Uang Tunai', 'Cashless': 'Cashless' }, showCancelButton: true });
+            const { value: m } = await Swal.fire({ title: `Pelunasan ${nama}`, text: `Terima lunas Rp ${total.toLocaleString('id-ID')}?`, input: 'select', inputOptions: { 'Tunai': 'Uang Tunai', 'Cashless': 'Cashless (QRIS/Transfer)' }, showCancelButton: true, confirmButtonColor: '#4361ee' });
             if(!m) return; let isHutangToko = nama.startsWith("Toko Ngutang");
             if(isHutangToko) {
-                let nAsli = nama.replace("Toko Ngutang Ke: ", "").trim(); amanPush('warung/history', { waktu: new Date().toLocaleTimeString('id-ID'), kasir: namaKasirAktif, barang: `\n[INFO:DANGER:BAYAR KEMBALIAN KE: ${nAsli}]\n[INFO:MUTED:${m.toUpperCase()}]`, total: total, bayar: total, kembali: 0, jenis: 'bayar_kembalian', uangMasuk: 0, masukLaci: m==='Tunai' ? -total : 0, ref_hutang: key }, 'history'); if(m === 'Tunai') amanKurangUang('warung/pendapatan', total);
+                let nAsli = nama.replace("Toko Ngutang Ke: ", "").trim();
+                let txt = `\n[INFO:DANGER:BAYAR KEMBALIAN KE: ${nAsli}]\n[INFO:MUTED:${m==='Tunai'?'TUNAI':'CASHLESS'}]`;
+                amanPush('warung/history', { waktu: new Date().toLocaleTimeString('id-ID'), kasir: namaKasirAktif, barang: txt, total: total, bayar: total, kembali: 0, jenis: 'bayar_kembalian', uangMasuk: 0, masukLaci: m==='Tunai' ? -total : 0, ref_hutang: key }, 'history');
+                if(m === 'Tunai') amanKurangUang('warung/pendapatan', total); amanHapus('warung/hutang/' + key, 'hutang', key); catatLogAktivitas("BAYAR KEMBALIAN", `Ke ${nAsli} Rp ${total.toLocaleString('id-ID')}`);
             } else {
-                amanPush('warung/history', { waktu: new Date().toLocaleTimeString('id-ID'), kasir: namaKasirAktif, barang: `\n[INFO:SUCCESS:BAYAR HUTANG: ${nama}]\n[INFO:MUTED:${m.toUpperCase()}]`, total: total, bayar: total, kembali: 0, jenis: m==='Tunai' ? 'bayar_hutang' : 'bayar_hutang_cashless', uangMasuk: total, masukLaci: m==='Tunai' ? total : 0, ref_hutang: key }, 'history'); if(m === 'Tunai') amanTambahUang('warung/pendapatan', total);
+                let j = m === 'Tunai' ? 'bayar_hutang' : 'bayar_hutang_cashless'; let txt = `\n[INFO:SUCCESS:BAYAR HUTANG: ${nama}]\n[INFO:MUTED:${m==='Tunai'?'TUNAI':'CASHLESS'}]`;
+                amanPush('warung/history', { waktu: new Date().toLocaleTimeString('id-ID'), kasir: namaKasirAktif, barang: txt, total: total, bayar: total, kembali: 0, jenis: j, uangMasuk: total, masukLaci: m==='Tunai' ? total : 0, ref_hutang: key }, 'history');
+                if(m === 'Tunai') amanTambahUang('warung/pendapatan', total); amanHapus('warung/hutang/' + key, 'hutang', key); catatLogAktivitas("HUTANG LUNAS", `Dari ${nama} Rp ${total.toLocaleString('id-ID')}`);
             }
-            amanHapus('warung/hutang/' + key, 'hutang', key); Swal.fire({toast:true, position:'top-end', icon:'success', title:'Lunas!', showConfirmButton:false, timer:1500});
+            if(typeof Swal.fire === 'function') Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Lunas!', showConfirmButton: false, timer: 1500});
         } finally { isUI_Locked = false; }
     }
 
     async function cicilHutang(key, nama, totalSaatIni) {
         if(isUI_Locked) return; isUI_Locked = true;
         try {
-            const { value: nStr } = await Swal.fire({ title: `Cicilan`, text: `Sisa: Rp ${totalSaatIni.toLocaleString('id-ID')}`, input: 'text', inputAttributes: { inputmode: 'numeric', oninput: 'formatUangLokal(this)' }, showCancelButton: true });
-            if (!nStr) return; let nom = parseInt(nStr.replace(/[^0-9]/g, '')); if (isNaN(nom) || nom <= 0 || nom > totalSaatIni) return Swal.fire("Gagal", "Nominal tidak valid!", "error");
-            const { value: m } = await Swal.fire({ title: 'Metode', input: 'select', inputOptions: { 'Tunai': 'Uang Tunai', 'Cashless': 'Cashless' }, showCancelButton: true });
+            const { value: nStr } = await Swal.fire({ title: `Cicilan ${nama}`, text: `Sisa: Rp ${totalSaatIni.toLocaleString('id-ID')}`, input: 'text', inputAttributes: { inputmode: 'numeric', oninput: 'formatUangLokal(this)' }, showCancelButton: true, confirmButtonColor: '#4361ee' });
+            if (!nStr) return; let nom = parseInt(nStr.replace(/[^0-9]/g, '')); if (isNaN(nom) || nom <= 0) return Swal.fire("Gagal", "Nominal cicilan tidak valid!", "error");
+            if (nom > totalSaatIni) return Swal.fire("Peringatan!", `Nominal cicilan (Rp ${nom.toLocaleString('id-ID')}) melebihi sisa tagihan. Gunakan tombol 'Lunas'.`, "error");
+
+            const { value: m } = await Swal.fire({ title: 'Metode Pembayaran', input: 'select', inputOptions: { 'Tunai': 'Uang Tunai', 'Cashless': 'Cashless' }, showCancelButton: true, confirmButtonColor: '#4361ee' });
             if (!m) return; let isHutangToko = nama.startsWith("Toko Ngutang");
-            if(isHutangToko) { amanPush('warung/history', { waktu: new Date().toLocaleTimeString('id-ID'), kasir: namaKasirAktif, barang: `\n[INFO:DANGER:BAYAR KEMBALIAN (CICIL)]\n[INFO:MUTED:${m.toUpperCase()}]`, total: nom, bayar: nom, kembali: 0, jenis: 'bayar_kembalian', uangMasuk: 0, masukLaci: m==='Tunai' ? -nom : 0 }, 'history'); if(m === 'Tunai') amanKurangUang('warung/pendapatan', nom); } 
-            else { amanPush('warung/history', { waktu: new Date().toLocaleTimeString('id-ID'), kasir: namaKasirAktif, barang: `\n[INFO:SUCCESS:BAYAR HUTANG (CICIL)]\n[INFO:MUTED:${m.toUpperCase()}]`, total: nom, bayar: totalSaatIni, kembali: 0, jenis: m==='Tunai' ? 'bayar_hutang' : 'bayar_hutang_cashless', uangMasuk: nom, masukLaci: m==='Tunai' ? nom : 0 }, 'history'); if(m === 'Tunai') amanTambahUang('warung/pendapatan', nom); }
-            let sisa = totalSaatIni - nom; if (sisa === 0) { amanHapus('warung/hutang/' + key, 'hutang', key); Swal.fire('Lunas!', '', 'success'); } else { if(isOnline && typeof firebase !== 'undefined') db.ref('warung/hutang/' + key).update({total: sisa}); dataHutangMentah[key].total = sisa; saveLocalCache('hutang', dataHutangMentah); executeRenderBukuHutang(); Swal.fire('Cicilan Masuk!', '', 'success'); }
+            if(isHutangToko) {
+                 let nAsli = nama.replace("Toko Ngutang Ke: ", "").trim(); let txt = `\n[INFO:DANGER:BAYAR KEMBALIAN (CICIL) KE: ${nAsli}]\n[INFO:MUTED:${m==='Tunai'?'TUNAI':'CASHLESS'}]`;
+                 amanPush('warung/history', { waktu: new Date().toLocaleTimeString('id-ID'), kasir: namaKasirAktif, barang: txt, total: nom, bayar: nom, kembali: 0, jenis: 'bayar_kembalian', uangMasuk: 0, masukLaci: m==='Tunai' ? -nom : 0, ref_hutang: key }, 'history');
+                 if(m === 'Tunai') amanKurangUang('warung/pendapatan', nom); catatLogAktivitas("CICIL KEMBALIAN", `Ke ${nAsli} Rp ${nom.toLocaleString('id-ID')}`);
+            } else {
+                 let j = m === 'Tunai' ? 'bayar_hutang' : 'bayar_hutang_cashless'; let txt = `\n[INFO:SUCCESS:BAYAR HUTANG (CICIL): ${nama}]\n[INFO:MUTED:${m==='Tunai'?'TUNAI':'CASHLESS'}]`;
+                 amanPush('warung/history', { waktu: new Date().toLocaleTimeString('id-ID'), kasir: namaKasirAktif, barang: txt, total: nom, bayar: totalSaatIni, kembali: 0, jenis: j, uangMasuk: nom, masukLaci: m==='Tunai' ? nom : 0, ref_hutang: key }, 'history');
+                 if(m === 'Tunai') amanTambahUang('warung/pendapatan', nom); catatLogAktivitas("CICIL HUTANG", `Dari ${nama} Rp ${nom.toLocaleString('id-ID')}`);
+            }
+            let sisa = totalSaatIni - nom; if (sisa === 0) { amanHapus('warung/hutang/' + key, 'hutang', key); Swal.fire('Lunas!', '', 'success'); } else { amanUpdateHutang(key, sisa); Swal.fire('Sisa diperbarui!', '', 'success'); }
         } finally { isUI_Locked = false; }
     }
 
     async function hapusHutangBatal(key, nama) {
         if(isUI_Locked) return; isUI_Locked = true;
-        try { const res = await Swal.fire({ title: 'Buang ke Sampah?', icon: 'warning', showCancelButton: true }); if(res.isConfirmed) { let d = dataHutangMentah[key]; amanPush('warung/sampah', {...d, meta_kategori:'hutang', meta_key:key}, 'sampah'); amanHapus('warung/hutang/' + key, 'hutang', key); Swal.fire('Dibuang', '', 'success'); } } finally { isUI_Locked = false; }
+        try {
+            const res = await Swal.fire({ title: 'Buang ke Sampah?', text: "Hutang akan dimasukkan ke tong sampah.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545' });
+            if(res.isConfirmed) { let d = dataHutangMentah[key] || { nama: nama, total: 0, waktu: new Date().toLocaleTimeString('id-ID') }; buangKeSampah('hutang', key, d); amanHapus('warung/hutang/' + key, 'hutang', key); catatLogAktivitas("HAPUS HUTANG", `${nama} dibuang ke sampah`); if(typeof Swal.fire === 'function') Swal.fire('Dibuang', '', 'success'); }
+        } finally { isUI_Locked = false; }
     }
 
     async function hapusTransaksi(key, uMasuk, jenis, totalBarang) {
         if(isUI_Locked) return; isUI_Locked = true;
         try {
-            if (!historyDataMentah[key]) return Swal.fire("Sudah Terhapus", "", "info");
-            if (jenis.includes('hutang') || jenis.includes('kembalian')) { const conf = await Swal.fire({ title: 'Peringatan Akuntansi!', html: `Sistem TIDAK AKAN mengembalikan data Buku Hutang otomatis. Lanjut batalkan?`, icon: 'warning', showCancelButton: true }); if(!conf.isConfirmed) return; } 
-            else { const res = await Swal.fire({ title: 'Buang Transaksi?', text: "Uang laci akan dikoreksi otomatis.", icon: 'warning', showCancelButton: true }); if (!res.isConfirmed) return; }
-            let d = historyDataMentah[key]; let mLaci = d.masukLaci || 0; amanPush('warung/sampah', {...d, meta_kategori:'history', meta_key:key}, 'sampah'); amanHapus('warung/history/' + key, 'history', key); if(mLaci !== 0) amanKurangUang('warung/pendapatan', mLaci); Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Masuk Sampah', showConfirmButton: false, timer: 1500});
+            if (!historyDataMentah[key]) return Swal.fire("Sudah Terhapus", "Transaksi ini sudah berhasil dibuang.", "info");
+            if (jenis.includes('hutang') || jenis.includes('kembalian')) {
+                const konfirmasiHutang = await Swal.fire({ title: 'Peringatan Akuntansi Lanjutan!', html: `Transaksi ini berkaitan dengan <b>Buku Hutang</b>.<br><br>Sistem hanya akan menarik uang laci dan omzet. <b>Sistem TIDAK AKAN mengembalikan data di Buku Hutang secara otomatis</b>.<br><br>Lanjut batalkan?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545' });
+                if(!konfirmasiHutang.isConfirmed) return;
+            } else {
+                const res = await Swal.fire({ title: 'Buang Transaksi?', text: "Uang laci akan dikoreksi otomatis & masuk tong sampah.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545' });
+                if (!res.isConfirmed) return;
+            }
+            
+            let d = historyDataMentah[key]; let mLaci = d.masukLaci;
+            if(mLaci === undefined) {
+                if (d.jenis === 'lunas') mLaci = d.total; else if (d.jenis === 'cashless' || d.jenis === 'konsumsi' || d.jenis === 'bayar_hutang_cashless') mLaci = 0; else if (d.jenis === 'hutang' || d.jenis === 'tip') mLaci = d.bayar || 0; else if (d.jenis === 'pengeluaran') mLaci = -(d.total); else if (d.jenis === 'bayar_kembalian') mLaci = d.barang.includes('CASHLESS') ? 0 : -(d.total); else if (d.jenis === 'bayar_hutang') mLaci = d.barang.includes('CASHLESS') ? 0 : d.total; else mLaci = 0;
+            }
+
+            buangKeSampah('history', key, d); delete historyDataMentah[key]; amanHapus('warung/history/' + key, 'history', key);
+            
+            if(mLaci !== 0) { 
+                if (mLaci > uangLaciGlobal && mLaci > 0) { amanKurangUang('warung/pendapatan', uangLaciGlobal); } 
+                else { amanKurangUang('warung/pendapatan', mLaci); }
+            }
+            
+            catatLogAktivitas("BATAL TRANSAKSI", `Dibuang ke sampah: Rp ${totalBarang.toLocaleString('id-ID')}`);
+            if(typeof Swal.fire === 'function') Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Masuk Sampah', showConfirmButton: false, timer: 1500});
         } finally { isUI_Locked = false; }
     }
 
-    function extractNamaHutang(rawStr) { if(rawStr.includes('KE:')) return rawStr.split('KE:')[1].split('\n')[0].replace(']','').trim(); if(rawStr.includes('HUTANG (CICIL):')) return rawStr.split('HUTANG (CICIL):')[1].split('\n')[0].replace(']','').trim(); if(rawStr.includes('HUTANG:')) return rawStr.split('HUTANG:')[1].split('\n')[0].replace(']','').trim(); return "Pelanggan"; }
+    async function tambahMenuBaru() {
+        if(isUI_Locked) return; isUI_Locked = true;
+        try {
+            let n = document.getElementById('namaBaru').value.trim(); let h = parseInt(document.getElementById('hargaBaru').value.replace(/[^0-9]/g, '')); let k = document.getElementById('katBaru').value;
+            if(k === "Lainnya") { let kMan = document.getElementById('katBaruManual').value.trim(); if(!kMan) return Swal.fire("Oops", "Kategori baru belum diisi!", "error"); k = kMan; }
+            if (!n) return Swal.fire("Oops", "Nama barang belum diisi!", "error"); if (isNaN(h)) return Swal.fire("Oops", "Harga wajib diisi angka!", "error");
+            
+            amanPush('warung/menu', { nama: n, harga: h, kategori: k, urutan: 0 }, 'menu'); catatLogAktivitas("TAMBAH MENU", `+ ${n} (Rp ${h})`);
+            document.getElementById('namaBaru').value = ''; document.getElementById('hargaBaru').value = ''; document.getElementById('katBaruManual').value = ''; document.getElementById('katBaru').value = 'Makanan'; document.getElementById('katBaruManual').style.display = 'none';
+            if(typeof Swal.fire === 'function') Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Tersimpan', showConfirmButton: false, timer: 1500 });
+        } finally { isUI_Locked = false; }
+    }
+    
+    async function editMenu(key) { 
+        if(isUI_Locked) return; isUI_Locked = true;
+        try {
+            let m = dataMenuMentah[key]; if(!m) return;
+            const { value: n } = await Swal.fire({ title: 'Edit Nama', input: 'text', inputValue: m.nama, showCancelButton: true, confirmButtonColor: '#4361ee' });
+            if (n && n.trim()!=="") { 
+                const { value: h } = await Swal.fire({ title: 'Edit Harga', input: 'text', inputValue: m.harga.toLocaleString('id-ID'), inputAttributes: { inputmode: 'numeric', oninput: 'formatUangLokal(this)' }, showCancelButton: true, confirmButtonColor: '#4361ee' });
+                if(h !== undefined && h.trim() !== "") { 
+                    let hNominal = parseInt(h.replace(/[^0-9]/g, ''));
+                    if (!isNaN(hNominal)) {
+                        let namaBaru = n.trim(); amanSetData('warung/menu/' + key, {nama: namaBaru, harga: hNominal, kategori: m.kategori, urutan: m.urutan || 0}, 'menu', key);
+                        keranjang.forEach((item) => { if(item.key === key) { item.nama = namaBaru; item.harga = hNominal; item.subtotal = item.qty * item.harga; } }); simpanKeranjang(); renderStruk(); catatLogAktivitas("EDIT MENU", `${m.nama} -> ${namaBaru}`); 
+                    }
+                }
+            } 
+        } finally { isUI_Locked = false; }
+    }
+    
+    async function hapusMenu(key, namaTerhapus) { 
+        if(isUI_Locked) return; isUI_Locked = true;
+        try {
+            const res = await Swal.fire({ title: 'Buang Menu?', text: `Masukkan ${namaTerhapus} ke tong sampah?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545' });
+            if(res.isConfirmed) { let m = dataMenuMentah[key] || { nama: namaTerhapus, harga: 0, kategori: "Lainnya" }; buangKeSampah('menu', key, m); amanHapus('warung/menu/' + key, 'menu', key); keranjang = keranjang.filter(item => item.key !== key); simpanKeranjang(); renderStruk(); catatLogAktivitas("HAPUS MENU", `Dibuang: ${namaTerhapus}`); } 
+        } finally { isUI_Locked = false; }
+    }
 
+    // PDF REPORT LENGKAP DENGAN PEMISAHAN MODAL AWAL & TAMBAHAN
     function downloadLaporan() {
         if (Object.keys(historyDataMentah).length === 0) return Swal.fire("Kosong", "Belum ada transaksi hari ini.", "info");
+        
         let htmlPelunasan = ''; let rekapKategoriCopy = {};
         Object.keys(historyDataMentah).forEach(k => {
             let d = historyDataMentah[k]; if(!d) return; let j = d.jenis || 'lunas'; let tot = parseInt(d.total) || 0;
-            if (j === 'bayar_hutang' || j === 'bayar_hutang_cashless') { htmlPelunasan += `<tr><td style="color:#64748b;font-size:12px;border-bottom:1px solid #e5e7eb;padding:10px;">${escapeHTML(d.waktu||'')}</td><td style="border-bottom:1px solid #e5e7eb;padding:10px;">👤 ${escapeHTML(extractNamaHutang(d.barang))}</td><td style="color:#10b981;font-weight:bold;border-bottom:1px solid #e5e7eb;padding:10px;">+ Rp ${tot.toLocaleString('id-ID')}</td></tr>`; } 
-            else if (j === 'bayar_kembalian') { htmlPelunasan += `<tr><td style="color:#64748b;font-size:12px;border-bottom:1px solid #e5e7eb;padding:10px;">${escapeHTML(d.waktu||'')}</td><td style="border-bottom:1px solid #e5e7eb;padding:10px;">🏪 Kembalian ke ${escapeHTML(extractNamaHutang(d.barang))}</td><td style="color:#2563eb;font-weight:bold;border-bottom:1px solid #e5e7eb;padding:10px;">Pelunasan Titipan Rp ${tot.toLocaleString('id-ID')}</td></tr>`; }
-            if(j !== 'pengeluaran' && j !== 'bayar_kembalian' && j !== 'bayar_hutang' && j !== 'bayar_hutang_cashless' && j !== 'modal'){ let textBiasa = d.barang.split('\n').filter(l => !l.startsWith('[INFO')).join(' • '); let parts = textBiasa.split(/•/); if(parts.length === 1 && textBiasa.includes(',')) parts = textBiasa.split(','); parts.forEach(i => { let m = i.trim().match(/(.*?)\s\((\d+)\)/); if (m) { let n = escapeHTML(m[1].trim()); let q = parseInt(m[2], 10) || 0; let kat = dapatkanKategori(n); if(!rekapKategoriCopy[kat]) rekapKategoriCopy[kat] = {}; rekapKategoriCopy[kat][n] = (rekapKategoriCopy[kat][n] || 0) + q; } }); }
+            
+            if (j === 'bayar_hutang' || j === 'bayar_hutang_cashless') {
+                htmlPelunasan += `<tr><td style="color:#64748b;font-size:12px;border-bottom:1px solid #e5e7eb;padding:10px;">${escapeHTML(d.waktu||'')}</td><td style="border-bottom:1px solid #e5e7eb;padding:10px;">👤 ${escapeHTML(extractNamaHutang(d.barang))}</td><td style="color:#10b981;font-weight:bold;border-bottom:1px solid #e5e7eb;padding:10px;">+ Rp ${tot.toLocaleString('id-ID')}</td></tr>`;
+            } else if (j === 'bayar_kembalian') {
+                htmlPelunasan += `<tr><td style="color:#64748b;font-size:12px;border-bottom:1px solid #e5e7eb;padding:10px;">${escapeHTML(d.waktu||'')}</td><td style="border-bottom:1px solid #e5e7eb;padding:10px;">🏪 Kembalian ke ${escapeHTML(extractNamaHutang(d.barang))}</td><td style="color:#2563eb;font-weight:bold;border-bottom:1px solid #e5e7eb;padding:10px;">Pelunasan Titipan Rp ${tot.toLocaleString('id-ID')}</td></tr>`;
+            }
+
+            if(!['pengeluaran', 'bayar_kembalian', 'bayar_hutang', 'bayar_hutang_cashless', 'modal', 'tambah_modal'].includes(j)){
+                let textBiasa = d.barang.replace(/<[^>]*>/g, ' ').replace(/\[INFO.*?\]/g, ' '); 
+                let parts = textBiasa.split(' • '); 
+                parts.forEach(i => { 
+                    let matchKurung = i.match(/\((\d+)\)$/);
+                    if (matchKurung) { 
+                        let q = parseInt(matchKurung[1], 10); let n = i.substring(0, i.lastIndexOf('(')).trim();
+                        if(n && q) { let kat = dapatkanKategori(n); if(!rekapKategoriCopy[kat]) rekapKategoriCopy[kat] = {}; rekapKategoriCopy[kat][n] = (rekapKategoriCopy[kat][n] || 0) + q; }
+                    } 
+                });
+            }
         });
 
         let totalHutangPelanggan = 0; let totalHutangToko = 0; let htmlHutang = '';
         Object.keys(dataHutangMentah).forEach(k => {
             let h = dataHutangMentah[k]; 
-            if(h && h.total) { if(h.nama.startsWith("Toko Ngutang")) { totalHutangToko += parseInt(h.total); htmlHutang += `<tr><td style="border-bottom:1px solid #e5e7eb;padding:10px;">${escapeHTML(h.waktu||'')}</td><td style="border-bottom:1px solid #e5e7eb;padding:10px;">${escapeHTML(h.nama)}</td><td style="color:#d97706;font-weight:bold;border-bottom:1px solid #e5e7eb;padding:10px;">Titipan Rp ${parseInt(h.total).toLocaleString('id-ID')}</td></tr>`; } else { totalHutangPelanggan += parseInt(h.total); htmlHutang += `<tr><td style="border-bottom:1px solid #e5e7eb;padding:10px;">${escapeHTML(h.waktu||'')}</td><td style="border-bottom:1px solid #e5e7eb;padding:10px;">👤 ${escapeHTML(h.nama)}</td><td style="color:#ef4444;font-weight:bold;border-bottom:1px solid #e5e7eb;padding:10px;">Ngutang Rp ${parseInt(h.total).toLocaleString('id-ID')}</td></tr>`; } }
+            if(h && h.total) {
+                if(h.nama.startsWith("Toko Ngutang")) { totalHutangToko += parseInt(h.total); htmlHutang += `<tr><td style="border-bottom:1px solid #e5e7eb;padding:10px;">${escapeHTML(h.waktu||'')}</td><td style="border-bottom:1px solid #e5e7eb;padding:10px;">${escapeHTML(h.nama)}</td><td style="color:#d97706;font-weight:bold;border-bottom:1px solid #e5e7eb;padding:10px;">Titipan Rp ${parseInt(h.total).toLocaleString('id-ID')}</td></tr>`; } 
+                else { totalHutangPelanggan += parseInt(h.total); htmlHutang += `<tr><td style="border-bottom:1px solid #e5e7eb;padding:10px;">${escapeHTML(h.waktu||'')}</td><td style="border-bottom:1px solid #e5e7eb;padding:10px;">👤 ${escapeHTML(h.nama)}</td><td style="color:#ef4444;font-weight:bold;border-bottom:1px solid #e5e7eb;padding:10px;">Ngutang Rp ${parseInt(h.total).toLocaleString('id-ID')}</td></tr>`; }
+            }
         });
 
-        let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Laporan Warung Nosa</title><style>body{font-family:'Segoe UI',Arial,sans-serif;background:#f3f4f6;color:#1f2937;padding:20px;font-size:13px;line-height:1.6;} .kertas{background:#fff;padding:40px;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,0.05);max-width:1000px;margin:auto;} h2{color:#4361ee;text-align:center;margin-top:0;margin-bottom:5px;font-size:28px;text-transform:uppercase;} .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:30px;} .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:30px;} .box{background:#fff;padding:20px;border-radius:12px;border:1px solid #e2e8f0;} .box-title{color:#4361ee;font-size:14px;font-weight:900;margin:0 0 15px 0;text-transform:uppercase;border-bottom:2px dashed #e2e8f0;padding-bottom:8px;} table{width:100%;border-collapse:collapse;} th,td{padding:10px;text-align:left;border-bottom:1px solid #e5e7eb;} th{background:#f8fafc;color:#475569;font-size:11px;text-transform:uppercase;} .badge{background:#4361ee;color:white;padding:4px 10px;border-radius:20px;font-weight:bold;font-size:12px;} .big-num{font-size:32px;font-weight:900;margin:10px 0;letter-spacing:-1px;} .math-box{background:#f8fafc; border: 1px dashed #cbd5e1; padding:15px; border-radius:8px; font-family:monospace; margin-top:10px; font-size:14px;}</style></head><body><div class="kertas">`;
+        let hitunganLaciSeharusnya = rekapAkuntansiGlobal.modalAwalMasuk + rekapAkuntansiGlobal.tambahModalMasuk + rekapAkuntansiGlobal.tunaiMasuk + rekapAkuntansiGlobal.nyangkutMasuk - rekapAkuntansiGlobal.kasKeluar - rekapAkuntansiGlobal.kembalianKeluar;
+        let selisihLaci = uangLaciGlobal - hitunganLaciSeharusnya;
+        let peringatanSelisih = selisihLaci !== 0 ? `<div style="background:#fef2f2; color:#ef4444; padding:10px; margin-top:10px; border-radius:8px; font-weight:bold; border:1px solid #fca5a5;">⚠️ Terdapat Selisih Laci: Rp ${selisihLaci.toLocaleString('id-ID')}</div>` : ``;
+
+        let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Laporan Warung Nosa</title><style>body{font-family:'Segoe UI',Arial,sans-serif;background:#f3f4f6;color:#1f2937;padding:20px;font-size:13px;line-height:1.6;} .kertas{background:#fff;padding:40px;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,0.05);max-width:1000px;margin:auto;} h2{color:#4361ee;text-align:center;margin-top:0;margin-bottom:5px;font-size:28px;text-transform:uppercase;} .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:30px;} .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:30px;} .box{background:#fff;padding:20px;border-radius:12px;border:1px solid #e2e8f0;box-shadow:0 4px 6px rgba(0,0,0,0.02);} .box-title{color:#4361ee;font-size:14px;font-weight:900;margin:0 0 15px 0;text-transform:uppercase;border-bottom:2px dashed #e2e8f0;padding-bottom:8px;} table{width:100%;border-collapse:collapse;} th,td{padding:10px;text-align:left;border-bottom:1px solid #e5e7eb;} th{background:#f8fafc;color:#475569;font-size:11px;text-transform:uppercase;letter-spacing:1px;} .badge{background:#4361ee;color:white;padding:4px 10px;border-radius:20px;font-weight:bold;font-size:12px;} .big-num{font-size:32px;font-weight:900;margin:10px 0;letter-spacing:-1px;} .math-line { display: flex; justify-content: space-between; margin-bottom: 4px; font-family:monospace; font-size:13px; color:#475569; } .math-line.result { border-top: 1px dashed #94a3b8; padding-top: 5px; margin-top: 5px; font-weight: bold; font-size: 15px; color: #1f2937; }</style></head><body><div class="kertas">`;
         html += `<h2>LAPORAN HARIAN WARUNG NOSA</h2><p style="text-align:center;color:#64748b;font-size:14px;margin-top:0;margin-bottom:40px;">Tanggal: <b>${new Date().toLocaleDateString('id-ID')}</b> | Kasir: <b>${escapeHTML(namaKasirAktif)}</b></p><div class="grid-3"><div class="box" style="border-top:4px solid #10b981; background:#ecfdf5;"><div class="box-title" style="color:#10b981;">Pendapatan Bersih</div><div class="big-num" style="color:#10b981;">Rp ${rekapAkuntansiGlobal.bersih.toLocaleString('id-ID')}</div></div><div class="box" style="border-top:4px solid #4361ee; background:#eff6ff;"><div class="box-title" style="color:#4361ee;">Uang Laci (Fisik)</div><div class="big-num" style="color:#4361ee;">Rp ${uangLaciGlobal.toLocaleString('id-ID')}</div></div><div class="box" style="border-top:4px solid #0ea5e9; background:#f0f9ff;"><div class="box-title" style="color:#0ea5e9;">Saldo Cashless</div><div class="big-num" style="color:#0ea5e9;">Rp ${rekapAkuntansiGlobal.cashless.toLocaleString('id-ID')}</div></div></div><div class="grid-2"><div class="box"><div class="box-title">📦 Rincian Barang Terjual</div>`;
-        let kats = Object.keys(rekapKategoriCopy).sort(); kats.forEach(kat => { html += `<h4 style="margin:15px 0 5px 0; color:#475569; background:#f1f5f9; padding:4px 8px; border-radius:6px; font-size:12px;">${escapeHTML(kat)}</h4><table><tr><th>Nama Barang</th><th style="width:80px; text-align:center;">Qty</th></tr>`; for(let n in rekapKategoriCopy[kat]) { html += `<tr><td>${escapeHTML(n)}</td><td style="text-align:center;"><span class="badge">${rekapKategoriCopy[kat][n]}</span></td></tr>`; } html += `</table>`; });
-        html += `</div><div class="box" style="background:#fff; border-top:4px solid #f59e0b;"><div class="box-title" style="color:#f59e0b;">🔎 Forensik Rumus Matematika (A+B-C)</div><b style="color:#475569;">RUMUS LABA BERSIH (HAK MILIK MUTLAK):</b><div class="math-box">${rekapAkuntansiGlobal.omzet.toLocaleString('id-ID')} <span style="font-size:10px;color:#94a3b8;">(Omzet)</span> <br>+ ${rekapAkuntansiGlobal.pelunasan.toLocaleString('id-ID')} <span style="font-size:10px;color:#94a3b8;">(Pelunasan)</span> <br>+ ${rekapAkuntansiGlobal.tip.toLocaleString('id-ID')} <span style="font-size:10px;color:#94a3b8;">(Tip/Ikhlas)</span> <br><span style="color:#ef4444">- ${rekapAkuntansiGlobal.keluar.toLocaleString('id-ID')}</span> <span style="font-size:10px;color:#94a3b8;">(Pengeluaran)</span> <br><hr style="border:0; border-top:1px dashed #cbd5e1; margin:5px 0;"><b style="color:#10b981;">= Rp ${rekapAkuntansiGlobal.bersih.toLocaleString('id-ID')}</b></div><div style="margin-top:20px;"></div><b style="color:#475569;">RUMUS UANG LACI FISIK (UANG KERTAS/KOIN):</b><div class="math-box">${rekapAkuntansiGlobal.modalMasuk.toLocaleString('id-ID')} <span style="font-size:10px;color:#94a3b8;">(Modal Awal/Tambah)</span> <br>+ ${rekapAkuntansiGlobal.tunaiMasuk.toLocaleString('id-ID')} <span style="font-size:10px;color:#94a3b8;">(Omzet/Tip Tunai)</span> <br>+ ${rekapAkuntansiGlobal.nyangkutMasuk.toLocaleString('id-ID')} <span style="font-size:10px;color:#d97706;">(Titipan Kembalian)</span> <br><span style="color:#ef4444">- ${rekapAkuntansiGlobal.kasKeluar.toLocaleString('id-ID')}</span> <span style="font-size:10px;color:#94a3b8;">(Keluar Belanja)</span> <br><span style="color:#ef4444">- ${rekapAkuntansiGlobal.kembalianKeluar.toLocaleString('id-ID')}</span> <span style="font-size:10px;color:#94a3b8;">(Lunasi Kembalian)</span> <br><hr style="border:0; border-top:1px dashed #cbd5e1; margin:5px 0;"><b style="color:#4361ee;">= Rp ${uangLaciGlobal.toLocaleString('id-ID')}</b></div></div></div><div class="box"><div class="box-title" style="color:#64748b;">📝 Arus Kas Harian (Semua Transaksi)</div><table><tr><th>Waktu</th><th>Jenis</th><th>Rincian</th><th>Nilai Kas</th></tr>`;
-        Object.keys(historyDataMentah).forEach(k => { let d = historyDataMentah[k]; if(!d || typeof d.barang !== 'string') return; let jTxt = String(d.jenis).toUpperCase(); let txtBarang = parseBarangHistory(d.barang); let nilaiKas = d.uangMasuk !== undefined ? parseInt(d.uangMasuk) : (d.jenis === 'hutang' ? 0 : parseInt(d.total)||0); if(d.jenis === 'pengeluaran' || d.jenis === 'bayar_kembalian') nilaiKas = -(parseInt(d.total)||0); let kasStr = nilaiKas >= 0 ? `+ Rp ${nilaiKas.toLocaleString('id-ID')}` : `- Rp ${Math.abs(nilaiKas).toLocaleString('id-ID')}`; let c = nilaiKas >= 0 ? '#10b981' : '#ef4444'; if(nilaiKas === 0) { kasStr = "Rp 0"; c = "#64748b"; } html += `<tr><td style="color:#64748b;font-size:12px;">${escapeHTML(d.waktu||'')}</td><td><span style="font-size:10px;background:#e2e8f0;padding:4px 8px;border-radius:6px;font-weight:bold;color:#475569;">${jTxt}</span></td><td>${txtBarang}</td><td style="color:${c};font-weight:bold;">${kasStr}</td></tr>`; });
+        
+        let kats = Object.keys(rekapKategoriCopy).sort(); let adaT = false;
+        kats.forEach(kat => { adaT = true; html += `<h4 style="margin:15px 0 5px 0; color:#475569; background:#f1f5f9; padding:4px 8px; border-radius:6px; font-size:12px;">${escapeHTML(kat)}</h4><table><tr><th>Nama Barang</th><th style="width:80px; text-align:center;">Qty</th></tr>`; for(let n in rekapKategoriCopy[kat]) { html += `<tr><td>${escapeHTML(n)}</td><td style="text-align:center;"><span class="badge">${rekapKategoriCopy[kat][n]}</span></td></tr>`; } html += `</table>`; });
+        if(!adaT) html += `<p style="text-align:center;color:#94a3b8;">Belum ada item laku</p>`;
+        
+        html += `</div><div class="box" style="background:#f8fafc; border-top:4px solid #f59e0b;"><div class="box-title" style="color:#f59e0b;">🔎 Forensik & Rumus Akuntansi Transparan</div>
+            <p style="font-weight:bold; color:#1f2937; margin-bottom:5px;">1. MATEMATIKA PENDAPATAN BERSIH (HAK MILIK)</p>
+            <div style="background:#fff; padding:10px; border:1px dashed #cbd5e1; border-radius:8px; margin-bottom:15px;">
+                <div class="math-line"><span>[+] Penjualan Baru (Lunas/DP)</span><span>Rp ${rekapAkuntansiGlobal.omzet.toLocaleString('id-ID')}</span></div>
+                <div class="math-line"><span>[+] Pelunasan Piutang</span><span>Rp ${rekapAkuntansiGlobal.pelunasan.toLocaleString('id-ID')}</span></div>
+                <div class="math-line"><span>[+] Uang Tip / Ikhlas</span><span>Rp ${rekapAkuntansiGlobal.tip.toLocaleString('id-ID')}</span></div>
+                <div class="math-line" style="color:#ef4444"><span>[-] Kas Keluar Belanja</span><span>- Rp ${rekapAkuntansiGlobal.keluar.toLocaleString('id-ID')}</span></div>
+                <div class="math-line result" style="color:#10b981"><span>PENDAPATAN BERSIH</span><span>Rp ${rekapAkuntansiGlobal.bersih.toLocaleString('id-ID')}</span></div>
+            </div>
+            <p style="font-weight:bold; color:#1f2937; margin-bottom:5px;">2. MATEMATIKA UANG LACI FISIK</p>
+            <div style="background:#fff; padding:10px; border:1px dashed #cbd5e1; border-radius:8px; margin-bottom:15px;">
+                <div class="math-line"><span>[+] Modal Awal Laci</span><span>Rp ${rekapAkuntansiGlobal.modalAwalMasuk.toLocaleString('id-ID')}</span></div>
+                <div class="math-line"><span>[+] Tambah Uang Receh</span><span>Rp ${rekapAkuntansiGlobal.tambahModalMasuk.toLocaleString('id-ID')}</span></div>
+                <div class="math-line"><span>[+] Omzet Tunai Fisik</span><span>Rp ${rekapAkuntansiGlobal.tunaiMasuk.toLocaleString('id-ID')}</span></div>
+                <div class="math-line" style="color:#d97706"><span>[+] Titipan (Kembalian Belum Dikasih)</span><span>Rp ${rekapAkuntansiGlobal.nyangkutMasuk.toLocaleString('id-ID')}</span></div>
+                <div class="math-line" style="color:#ef4444"><span>[-] Kas Keluar Tunai</span><span>- Rp ${rekapAkuntansiGlobal.kasKeluar.toLocaleString('id-ID')}</span></div>
+                <div class="math-line" style="color:#ef4444"><span>[-] Lunasi Kembalian</span><span>- Rp ${rekapAkuntansiGlobal.kembalianKeluar.toLocaleString('id-ID')}</span></div>
+                <div class="math-line result" style="color:#4361ee"><span>LACI SEHARUSNYA</span><span>Rp ${hitunganLaciSeharusnya.toLocaleString('id-ID')}</span></div>
+                ${peringatanSelisih}
+            </div>
+            <div style="background:#fffbeb; padding:10px; border-radius:8px; border:1px solid #fde68a; font-size:11px; color:#b45309; margin-top:10px;"><b>Catatan Akuntansi:</b> Laci fisik dan Laba bersih adalah 2 hal yang berbeda. Laba tidak dipengaruhi Uang Modal dan Uang Titipan.</div>
+        </div></div><div class="grid-2"><div class="box"><div class="box-title" style="color:#10b981;">✅ Pelunasan / Cicilan Masuk</div>`;
+        if(htmlPelunasan !== '') html += `<table><tr><th>Waktu</th><th>Nama</th><th>Keterangan</th></tr>${htmlPelunasan}</table>`; else html += `<p style="text-align:center; color:#94a3b8;">Kosong.</p>`;
+        html += `</div><div class="box"><div class="box-title" style="color:#ef4444;">📒 Daftar Piutang & Hutang Toko</div><div style="display:flex; gap:10px; margin-bottom:15px;"><div style="flex:1; background:#fef2f2; padding:10px; border-radius:8px; border:1px solid #fecaca; font-size:11px;">Pelanggan Ngutang:<br><b style="font-size:16px; color:#ef4444;">Rp ${totalHutangPelanggan.toLocaleString('id-ID')}</b></div><div style="flex:1; background:#fffbeb; padding:10px; border-radius:8px; border:1px solid #fde68a; font-size:11px;">Titipan Belum Diambil:<br><b style="font-size:16px; color:#d97706;">Rp ${totalHutangToko.toLocaleString('id-ID')}</b></div></div>`;
+        if(htmlHutang !== '') html += `<table><tr><th>Waktu</th><th>Nama</th><th>Status</th></tr>${htmlHutang}</table>`; else html += `<p style="text-align:center; color:#94a3b8;">Kosong.</p>`;
+        html += `</div></div><div class="box"><div class="box-title" style="color:#64748b;">📝 Arus Kas Harian (Semua Transaksi)</div><table><tr><th>Waktu</th><th>Kasir</th><th>Jenis</th><th>Rincian</th><th>Nilai Kas</th></tr>`;
+        
+        Object.keys(historyDataMentah).forEach(k => {
+            let d = historyDataMentah[k]; if(!d || typeof d.barang !== 'string') return;
+            let jTxt = String(d.jenis).toUpperCase(); let txtBarang = parseBarangHistory(d.barang);
+            let nilaiKas = d.uangMasuk !== undefined ? parseInt(d.uangMasuk) : (d.jenis === 'hutang' ? 0 : parseInt(d.total)||0);
+            if(d.jenis === 'pengeluaran' || d.jenis === 'bayar_kembalian') nilaiKas = -(parseInt(d.total)||0);
+
+            let kasStr = nilaiKas >= 0 ? `+ Rp ${nilaiKas.toLocaleString('id-ID')}` : `- Rp ${Math.abs(nilaiKas).toLocaleString('id-ID')}`;
+            let c = nilaiKas >= 0 ? '#10b981' : '#ef4444'; if(nilaiKas === 0) { kasStr = "Rp 0"; c = "#64748b"; }
+            html += `<tr><td style="color:#64748b;font-size:12px;">${escapeHTML(d.waktu||'')}</td><td style="font-weight:bold;">${escapeHTML(d.kasir||'Sistem')}</td><td><span style="font-size:10px;background:#e2e8f0;padding:4px 8px;border-radius:6px;font-weight:bold;color:#475569;">${jTxt.replace('_', ' ')}</span></td><td>${txtBarang}</td><td style="color:${c};font-weight:bold;">${kasStr}</td></tr>`;
+        });
         html += `</table></div></div></body></html>`;
-        const blob = new Blob([html], { type: 'text/html;charset=utf-8' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Laporan_Nosa_${new Date().toLocaleDateString('id-ID').replace(/\//g, '-')}.html`; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+
+        const blob = new Blob([html], { type: 'text/html;charset=utf-8' }); const a = document.createElement('a'); 
+        a.href = URL.createObjectURL(blob); a.download = `Laporan_Nosa_${new Date().toLocaleDateString('id-ID').replace(/\//g, '-')}.html`; 
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        
+        catatLogAktivitas("DOWNLOAD", "Mencetak Laporan PDF/HTML Pro"); 
+        if(typeof Swal.fire === 'function') Swal.fire('Selesai', 'Laporan berhasil diunduh.', 'success');
     }
 
-    function executeRenderLogAktivitas() { const c = document.getElementById('containerLogAktivitas'); let h = ''; Object.keys(dataLogMentah).reverse().forEach(key => { const l = dataLogMentah[key]; if(!l) return; h += `<div style="font-size:10px; border-bottom:1px solid #eee; padding:4px 0;"><b style="color:var(--primary)">[${l.waktu}]</b> ${escapeHTML(l.aksi)}: ${escapeHTML(l.detail)}</div>`; }); c.innerHTML = h || '<div style="font-size:10px; color:#ccc;">Kosong</div>'; }
-    function executeRenderSampah() { const c = document.getElementById('containerSampah'); let samH = ''; Object.keys(dataSampahMentah).reverse().forEach(key => { const item = dataSampahMentah[key]; if(!item) return; let nama = item.nama || (item.barang ? item.barang.replace(/<.*?>/g, '').replace(/\[.*?\]/g,'') : "Data"); samH += `<div style="display:flex; justify-content:space-between; align-items:center; font-size:10px; border-bottom:1px solid #eee; padding:4px 0;"><span style="flex:1;">[${escapeHTML(item.meta_kategori)}] ${escapeHTML(nama)}</span><button style="background:var(--success); color:white; border:none; padding:2px 5px; border-radius:4px;" onclick="kembalikanSampah('${key}')">🔄</button><button style="background:var(--danger); color:white; border:none; padding:2px 5px; border-radius:4px; margin-left:4px;" onclick="hapusSampahPermanen('${key}')">✖</button></div>`; }); c.innerHTML = samH || '<div style="font-size:10px; color:#ccc;">Kosong</div>'; }
-    
-    async function kembalikanSampah(keySampah) { if(isUI_Locked) return; isUI_Locked = true; try { let d = dataSampahMentah[keySampah]; if(!d) return; let dest = d.meta_kategori; let keyAsli = d.meta_key || buatIdLokal(); if (dest === 'history' && d.jenis && (d.jenis.includes('hutang') || d.jenis.includes('kembalian'))) return Swal.fire("Akses Ditolak!", "Transaksi Hutang tidak bisa di-restore otomatis.", "error"); let dataBersih = {...d}; delete dataBersih.meta_kategori; delete dataBersih.meta_key; delete dataBersih.meta_waktu_hapus; delete dataBersih.meta_kasir; if (dest === 'history' && d.masukLaci) amanTambahUang('warung/pendapatan', d.masukLaci); amanSetData('warung/' + dest + '/' + keyAsli, dataBersih, dest, keyAsli); amanHapus('warung/sampah/' + keySampah, 'sampah', keySampah); Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Dikembalikan!', showConfirmButton: false, timer: 1500}); } finally { isUI_Locked = false; } }
-    async function hapusSampahPermanen(key) { if(isUI_Locked) return; isUI_Locked = true; try { const res = await Swal.fire({ title: 'Hapus Permanen?', icon: 'warning', showCancelButton: true }); if(res.isConfirmed) amanHapus('warung/sampah/' + key, 'sampah', key); } finally { isUI_Locked = false; } }
-    async function kosongkanTongSampah() { if(isUI_Locked) return; isUI_Locked = true; try { const res = await Swal.fire({ title: 'Bakar Semua?', icon: 'error', showCancelButton: true }); if(res.isConfirmed) amanHapus('warung/sampah', 'sampah', ''); } finally { isUI_Locked = false; } }
-    async function toggleModeAdmin() { if(isUI_Locked) return; isUI_Locked = true; try { let panel = document.getElementById("panelAdminRahasia"); if (panel.style.display === "none" || panel.style.display === "") { const { value: pin } = await Swal.fire({ title: 'Keamanan Admin', input: 'password', showCancelButton: true }); if (pin === pinRahasiaServer) { panel.style.display = "block"; window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); } else { Swal.fire('Ditolak', 'PIN Salah!', 'error'); } } else { panel.style.display = "none"; } } finally { isUI_Locked = false; } }
-    async function gantiPinMaster() { if(isUI_Locked) return; isUI_Locked = true; try { const { value: oldPin } = await Swal.fire({ title: 'Ganti PIN', input: 'password', inputPlaceholder: 'PIN Lama', showCancelButton: true }); if (oldPin !== pinRahasiaServer) return Swal.fire('Gagal', 'PIN Lama salah!', 'error'); const { value: newPin } = await Swal.fire({ title: 'PIN Baru', input: 'password', inputPlaceholder: 'PIN Baru', showCancelButton: true }); if (newPin) amanSetData('warung/pengaturan/pin', newPin.trim(), 'pin'); } finally { isUI_Locked = false; } }
+    function muatSemuaLog() {
+        if (!navigator.onLine || typeof firebase === 'undefined') return Swal.fire("Offline", "Koneksi terputus.", "error");
+        Swal.fire({title: 'Memuat...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+        inisiasiListenerLog(1000); 
+        setTimeout(() => { Swal.close(); Swal.fire({toast:true, position:'top-end', icon:'success', title:'1000 Log Dimuat', showConfirmButton:false, timer:1500}); }, 1500);
+    }
 
-    if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').then(reg => console.log('SW Aktif!')).catch(err => console.log('SW Gagal:', err)); }); }
-    
-    // Auto-init for standalone view if no firebase auth triggered
-    document.addEventListener("DOMContentLoaded", function() { initKasir(); setTimeout(()=>{if(namaKasirAktif) document.getElementById("namaKasirTampil").innerText = escapeHTML(namaKasirAktif); renderPilihanPecahan();}, 1000); });
+    function executeRenderLogAktivitas() {
+        const container = document.getElementById('containerLogAktivitas'); if(!container) return;
+        const filterText = (document.getElementById('cariLogInput')?.value || '').toLowerCase(); let logH = ''; let count = 0;
+        Object.keys(dataLogMentah).reverse().forEach(key => {
+            const log = dataLogMentah[key]; if(!log) return;
+            let textTampil = `${log.waktu || ''} ${log.kasir || ''} ${log.aksi || ''} ${log.detail || ''}`.toLowerCase();
+            if (textTampil.includes(filterText)) { logH += `<div class="log-box-new"><b>[${escapeHTML(log.waktu)}]</b><br><span style="color:var(--primary); font-weight:bold;">${escapeHTML(log.kasir)}</span> melakukan <u>${escapeHTML(log.aksi)}</u><br><small>${escapeHTML(log.detail)}</small></div>`; count++; }
+        });
+        container.innerHTML = count === 0 ? '<p style="text-align:center; color:#ccc; font-size: 12px; padding:20px;">Tidak ditemukan.</p>' : logH;
+    }
+
+    function executeRenderSampah() {
+        const container = document.getElementById('containerSampah'); if(!container) return;
+        const filterText = (document.getElementById('cariSampahInput')?.value || '').toLowerCase(); let samH = ''; let count = 0;
+        Object.keys(dataSampahMentah).reverse().forEach(key => {
+            const item = dataSampahMentah[key]; if(!item) return;
+            let namaAtauDetail = item.nama || (item.barang ? item.barang.replace(/<.*?>/g, '').replace(/\[.*?\]/g,'') : "Data"); let kat = item.meta_kategori || 'data';
+            let textSearch = `${namaAtauDetail} ${kat} ${item.meta_waktu_hapus || ''}`.toLowerCase();
+            if (textSearch.includes(filterText)) { samH += `<div class="sampah-box-new"><b>[${escapeHTML(kat).toUpperCase()}]</b> ${escapeHTML(namaAtauDetail)}<br><small style="color:#ef4444; font-weight:bold;">Dihapus: ${escapeHTML(item.meta_waktu_hapus)}</small><div style="margin-top:8px; display:flex; gap:6px;"><button class="btn btn-small" style="background:var(--success); color:white; flex:1;" onclick="kembalikanSampah('${key}')">🔄 Pulihkan</button><button class="btn btn-small" style="background:var(--danger); color:white; flex:1;" onclick="hapusSampahPermanen('${key}')">✖ Permanen</button></div></div>`; count++; }
+        });
+        container.innerHTML = count === 0 ? '<p style="text-align:center; color:#ccc; font-size: 12px; padding:20px;">Tidak ditemukan.</p>' : samH;
+    }
+
+    async function kembalikanSampah(keySampah) {
+        if(isUI_Locked) return; isUI_Locked = true;
+        try {
+            let d = dataSampahMentah[keySampah]; if(!d) return; let dest = d.meta_kategori; let keyAsli = d.meta_key || buatIdLokal();
+            if (dest === 'history' && d.jenis && (d.jenis.includes('hutang') || d.jenis.includes('kembalian'))) { return Swal.fire("Akses Ditolak!", "Transaksi Hutang / Pelunasan dilarang untuk di-restore karena akan merusak sinkronisasi saldo Buku Hutang.", "error"); }
+            let dataBersih = {...d}; delete dataBersih.meta_kategori; delete dataBersih.meta_key; delete dataBersih.meta_waktu_hapus; delete dataBersih.meta_kasir;
+            if (dest === 'history') {
+                let mLaci = d.masukLaci;
+                if(mLaci === undefined) { if (d.jenis === 'lunas') mLaci = d.total; else if (d.jenis === 'cashless' || d.jenis === 'konsumsi' || d.jenis === 'bayar_hutang_cashless') mLaci = 0; else if (d.jenis === 'hutang' || d.jenis === 'tip') mLaci = d.bayar || 0; else if (d.jenis === 'pengeluaran') mLaci = -(d.total); else if (d.jenis === 'bayar_kembalian') mLaci = d.barang.includes('CASHLESS') ? 0 : -(d.total); else if (d.jenis === 'bayar_hutang') mLaci = d.barang.includes('CASHLESS') ? 0 : d.total; else mLaci = 0; }
+                if(mLaci !== 0) amanTambahUang('warung/pendapatan', mLaci);
+            }
+            amanSetData('warung/' + dest + '/' + keyAsli, dataBersih, dest, keyAsli); amanHapus('warung/sampah/' + keySampah, 'sampah', keySampah);
+            catatLogAktivitas("RESTORE", `Mengembalikan ${dest}`); if(typeof Swal.fire === 'function') Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Dikembalikan!', showConfirmButton: false, timer: 1500});
+        } finally { isUI_Locked = false; }
+    }
+
+    async function hapusSampahPermanen(key) {
+        if(isUI_Locked) return; isUI_Locked = true;
+        try {
+            const res = await Swal.fire({ title: 'Hapus Permanen?', text: "Data tidak bisa dikembalikan lagi.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545' });
+            if(res.isConfirmed) { amanHapus('warung/sampah/' + key, 'sampah', key); catatLogAktivitas("HAPUS PERMANEN", `Menghapus 1 item dari tong sampah`); }
+        } finally { isUI_Locked = false; }
+    }
+
+    async function kosongkanTongSampah() {
+        if(Object.keys(dataSampahMentah).length === 0) return Swal.fire("Kosong", "Tong sampah sudah bersih", "info");
+        if(isUI_Locked) return; isUI_Locked = true;
+        try {
+            const res = await Swal.fire({ title: 'Bakar Semua Sampah?', text: "Semua data di tong sampah akan musnah.", icon: 'error', showCancelButton: true, confirmButtonColor: '#dc3545' });
+            if(res.isConfirmed) { amanHapus('warung/sampah', 'sampah', ''); catatLogAktivitas("BAKAR SAMPAH", "Mengosongkan semua isi tong sampah"); if(typeof Swal.fire === 'function') Swal.fire('Musnah', 'Semua sampah sudah dibakar.', 'success'); }
+        } finally { isUI_Locked = false; }
+    }
+
+    async function toggleModeAdmin() {
+        if(isUI_Locked) return; isUI_Locked = true;
+        try {
+            let panel = document.getElementById("panelAdminRahasia");
+            if (panel.style.display === "none" || panel.style.display === "") {
+                const { value: pin } = await Swal.fire({ title: 'Otorisasi Keamanan', input: 'password', inputPlaceholder: 'Masukkan PIN Master...', showCancelButton: true, confirmButtonColor: '#3a0ca3' });
+                if (!pin) return;
+                if (pin === pinRahasiaServer) { panel.style.display = "block"; catatLogAktivitas("AKSES ADMIN", "Membuka log & tong sampah"); window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); } 
+                else { Swal.fire('Ditolak', 'PIN Master Salah!', 'error'); }
+            } else { panel.style.display = "none"; }
+        } finally { isUI_Locked = false; }
+    }
+
+    async function gantiPinMaster() {
+        if(isUI_Locked) return; isUI_Locked = true;
+        try {
+            const { value: oldPin } = await Swal.fire({ title: 'Ganti PIN', input: 'password', inputPlaceholder: 'Masukkan PIN Lama', showCancelButton: true });
+            if (!oldPin) return; if (oldPin !== pinRahasiaServer) return Swal.fire('Gagal', 'PIN Lama salah!', 'error');
+            const { value: newPin } = await Swal.fire({ title: 'PIN Baru', input: 'password', inputPlaceholder: 'Masukkan PIN Baru', showCancelButton: true });
+            if (newPin && newPin.trim() !== "") { amanSetUangAtauPin('warung/pengaturan/pin', newPin.trim()); catatLogAktivitas("GANTI PIN", "PIN Master telah diperbarui"); if(typeof Swal.fire === 'function') Swal.fire('Sukses', 'PIN Master berhasil diganti', 'success'); }
+        } finally { isUI_Locked = false; }
+    }
+
+    async function bersihkanLogAktivitas() {
+        if(isUI_Locked) return; isUI_Locked = true;
+        try {
+            const res = await Swal.fire({ title: 'Hapus Seluruh Log?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545' });
+            if (res.isConfirmed) { amanHapus('warung/log_aktivitas', 'log', ''); if(typeof Swal.fire === 'function') Swal.fire('Musnah!', 'Log bersih.', 'success'); }
+        } finally { isUI_Locked = false; }
+    }
+
+    if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').then(reg => { console.log('SW Aktif!'); }).catch(err => { console.log('SW Gagal:', err); }); }); }
 </script>
 </body>
 </html>
