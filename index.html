@@ -547,38 +547,47 @@
         if(dataHutangMentah[key]) { dataHutangMentah[key].total = totalBaru; reqRenderHutang(); saveLocalCache('hutang', dataHutangMentah); }
     }
 
-    // FITUR ANTI LACI GANDA & MINUS
-    function amanTambahUang(path, nilai) {
-        let n = parseInt(nilai) || 0;
-        if(isOnline && typeof firebase !== 'undefined') { 
-            db.ref(path).transaction(v => (parseInt(v)||0) + n); 
-        } else { 
-            antreanOffline.push({tipe:'tambah_uang', path:path, nilai:n}); 
-            saveAntreanToMemori(); 
-            uangLaciGlobal += n; 
-            renderUangLaciVisual(); 
-            saveLocalCache('pendapatan', uangLaciGlobal);
-        }
-    }
-
-    function amanKurangUang(path, nilai) {
-        let n = parseInt(nilai) || 0;
-        if(isOnline && typeof firebase !== 'undefined') { 
-            db.ref(path).transaction(v => (parseInt(v)||0) - n); 
-        } else { 
-            antreanOffline.push({tipe:'kurang_uang', path:path, nilai:n}); 
-            saveAntreanToMemori(); 
-            uangLaciGlobal -= n; 
-            renderUangLaciVisual(); 
-            saveLocalCache('pendapatan', uangLaciGlobal); 
-        }
-    }
+    // Uang Laci 
 
     function amanSetUangAtauPin(path, nilai) {
         if(isOnline && typeof firebase !== 'undefined') { db.ref(path).set(nilai); }
         else { antreanOffline.push({tipe:'set', path:path, data:nilai}); saveAntreanToMemori(); }
         
-        if(path === 'warung/pendapatan') { uangLaciGlobal = parseInt(nilai)||0; renderUangLaciVisual(); saveLocalCache('pendapatan', uangLaciGlobal); } 
+        if(path === 'warung    // FITUR ANTI LACI GANDA & MINUS (REVISI ANTI-STUCK)
+    function amanTambahUang(path, nilai) {
+        let n = parseInt(nilai) || 0;
+        
+        // 1. UPDATE LOKAL SEKETIKA (Agar layar tidak macet nunggu server)
+        uangLaciGlobal += n; 
+        renderUangLaciVisual(); 
+        saveLocalCache('pendapatan', uangLaciGlobal);
+
+        // 2. KIRIM KE SERVER DI LATAR BELAKANG
+        if(isOnline && typeof firebase !== 'undefined') { 
+            db.ref(path).set(uangLaciGlobal); // Paksa sinkron dengan hitungan lokal
+        } else { 
+            antreanOffline.push({tipe:'set', path:path, data:uangLaciGlobal}); 
+            saveAntreanToMemori(); 
+        }
+    }
+
+    function amanKurangUang(path, nilai) {
+        let n = parseInt(nilai) || 0;
+        
+        // 1. UPDATE LOKAL SEKETIKA (Agar layar tidak macet nunggu server)
+        uangLaciGlobal -= n; 
+        renderUangLaciVisual(); 
+        saveLocalCache('pendapatan', uangLaciGlobal); 
+
+        // 2. KIRIM KE SERVER DI LATAR BELAKANG
+        if(isOnline && typeof firebase !== 'undefined') { 
+            db.ref(path).set(uangLaciGlobal); // Paksa sinkron dengan hitungan lokal
+        } else { 
+            antreanOffline.push({tipe:'set', path:path, data:uangLaciGlobal}); 
+            saveAntreanToMemori(); 
+        }
+    }
+/pendapatan') { uangLaciGlobal = parseInt(nilai)||0; renderUangLaciVisual(); saveLocalCache('pendapatan', uangLaciGlobal); } 
         else if (path === 'warung/pengaturan/pin') { pinRahasiaServer = nilai; saveLocalCache('pin', pinRahasiaServer); } 
         else if (path === 'warung/pengaturan/pecahan') { daftarPecahan = nilai; saveLocalCache('pecahan', daftarPecahan); renderPilihanPecahan(); }
     }
