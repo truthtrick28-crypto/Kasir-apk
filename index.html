@@ -547,24 +547,14 @@
         if(dataHutangMentah[key]) { dataHutangMentah[key].total = totalBaru; reqRenderHutang(); saveLocalCache('hutang', dataHutangMentah); }
     }
 
-    // Uang Laci 
-
-    function amanSetUangAtauPin(path, nilai) {
-        if(isOnline && typeof firebase !== 'undefined') { db.ref(path).set(nilai); }
-        else { antreanOffline.push({tipe:'set', path:path, data:nilai}); saveAntreanToMemori(); }
-        
-        if(path === 'warung    // FITUR ANTI LACI GANDA & MINUS (REVISI ANTI-STUCK)
+        // FITUR ANTI LACI GANDA & MINUS (REVISI ANTI-STUCK)
     function amanTambahUang(path, nilai) {
         let n = parseInt(nilai) || 0;
-        
-        // 1. UPDATE LOKAL SEKETIKA (Agar layar tidak macet nunggu server)
         uangLaciGlobal += n; 
         renderUangLaciVisual(); 
         saveLocalCache('pendapatan', uangLaciGlobal);
-
-        // 2. KIRIM KE SERVER DI LATAR BELAKANG
         if(isOnline && typeof firebase !== 'undefined') { 
-            db.ref(path).set(uangLaciGlobal); // Paksa sinkron dengan hitungan lokal
+            db.ref(path).set(uangLaciGlobal); 
         } else { 
             antreanOffline.push({tipe:'set', path:path, data:uangLaciGlobal}); 
             saveAntreanToMemori(); 
@@ -573,21 +563,22 @@
 
     function amanKurangUang(path, nilai) {
         let n = parseInt(nilai) || 0;
-        
-        // 1. UPDATE LOKAL SEKETIKA (Agar layar tidak macet nunggu server)
         uangLaciGlobal -= n; 
         renderUangLaciVisual(); 
         saveLocalCache('pendapatan', uangLaciGlobal); 
-
-        // 2. KIRIM KE SERVER DI LATAR BELAKANG
         if(isOnline && typeof firebase !== 'undefined') { 
-            db.ref(path).set(uangLaciGlobal); // Paksa sinkron dengan hitungan lokal
+            db.ref(path).set(uangLaciGlobal); 
         } else { 
             antreanOffline.push({tipe:'set', path:path, data:uangLaciGlobal}); 
             saveAntreanToMemori(); 
         }
     }
-/pendapatan') { uangLaciGlobal = parseInt(nilai)||0; renderUangLaciVisual(); saveLocalCache('pendapatan', uangLaciGlobal); } 
+
+    function amanSetUangAtauPin(path, nilai) {
+        if(isOnline && typeof firebase !== 'undefined') { db.ref(path).set(nilai); }
+        else { antreanOffline.push({tipe:'set', path:path, data:nilai}); saveAntreanToMemori(); }
+        
+        if(path === 'warung/pendapatan') { uangLaciGlobal = parseInt(nilai)||0; renderUangLaciVisual(); saveLocalCache('pendapatan', uangLaciGlobal); } 
         else if (path === 'warung/pengaturan/pin') { pinRahasiaServer = nilai; saveLocalCache('pin', pinRahasiaServer); } 
         else if (path === 'warung/pengaturan/pecahan') { daftarPecahan = nilai; saveLocalCache('pecahan', daftarPecahan); renderPilihanPecahan(); }
     }
