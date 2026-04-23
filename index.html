@@ -547,30 +547,30 @@
         if(dataHutangMentah[key]) { dataHutangMentah[key].total = totalBaru; reqRenderHutang(); saveLocalCache('hutang', dataHutangMentah); }
     }
 
-        // FITUR ANTI LACI GANDA & MINUS (REVISI ANTI-STUCK)
+    // FITUR ANTI LACI GANDA & MINUS
     function amanTambahUang(path, nilai) {
         let n = parseInt(nilai) || 0;
-        uangLaciGlobal += n; 
-        renderUangLaciVisual(); 
-        saveLocalCache('pendapatan', uangLaciGlobal);
         if(isOnline && typeof firebase !== 'undefined') { 
-            db.ref(path).set(uangLaciGlobal); 
+            db.ref(path).transaction(v => (parseInt(v)||0) + n); 
         } else { 
-            antreanOffline.push({tipe:'set', path:path, data:uangLaciGlobal}); 
+            antreanOffline.push({tipe:'tambah_uang', path:path, nilai:n}); 
             saveAntreanToMemori(); 
+            uangLaciGlobal += n; 
+            renderUangLaciVisual(); 
+            saveLocalCache('pendapatan', uangLaciGlobal);
         }
     }
 
     function amanKurangUang(path, nilai) {
         let n = parseInt(nilai) || 0;
-        uangLaciGlobal -= n; 
-        renderUangLaciVisual(); 
-        saveLocalCache('pendapatan', uangLaciGlobal); 
         if(isOnline && typeof firebase !== 'undefined') { 
-            db.ref(path).set(uangLaciGlobal); 
+            db.ref(path).transaction(v => (parseInt(v)||0) - n); 
         } else { 
-            antreanOffline.push({tipe:'set', path:path, data:uangLaciGlobal}); 
+            antreanOffline.push({tipe:'kurang_uang', path:path, nilai:n}); 
             saveAntreanToMemori(); 
+            uangLaciGlobal -= n; 
+            renderUangLaciVisual(); 
+            saveLocalCache('pendapatan', uangLaciGlobal); 
         }
     }
 
